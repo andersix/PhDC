@@ -1,0 +1,5 @@
+gpiozero>=1.6.2
+PyYAML>=6.0.1
+pigpio>=1.78
+setuptools>=65.5.1
+

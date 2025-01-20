@@ -1,0 +1,31 @@
+pihole_display/
+├── config/
+│   └── config.yaml
+├── log/
+├── scripts/
+│   └── start_display.sh
+├── src/
+│   ├── controllers/
+│   │   ├── __init__.py
+│   │   └── button_manager.py
+│   ├── display/
+│   │   ├── __init__.py
+│   │   ├── backlight.py
+│   │   ├── manager.py
+│   │   └── tmux.py
+│   ├── hardware/
+│   │   ├── __init__.py
+│   │   └── button.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── pihole.py
+│   │   └── system.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── constants.py
+│   │   └── exceptions.py
+│   ├── __init__.py
+│   └── models.py
+└── main.py
+
