@@ -36,6 +36,7 @@ class ButtonHandler:
         """
         try:
             self._hold_start: Optional[float] = None
+            self.function = config.function
             
             self.button = GPIOButton(
                 pin=config.pin,
@@ -45,10 +46,9 @@ class ButtonHandler:
                 hold_repeat=config.hold_repeat
             )
             
-            # Set up callbacks
             self._setup_callbacks(callback, hold_callback)
                 
-            logger.info(f"Initialized button on pin {config.pin}")
+            logger.info(f"Initialized {self.function} button on pin {config.pin}")
             
         except GPIOZeroError as e:
             error_msg = f"Failed to initialize button on pin {config.pin}: {str(e)}"
@@ -65,31 +65,28 @@ class ButtonHandler:
             press_callback: Function to call on button press
             hold_callback: Function to call on button hold release
         """
-        if press_callback and not hold_callback:
-            self.button.when_pressed = press_callback
-        
+        self._press_callback = press_callback
+        self._hold_callback = hold_callback
+    
         if hold_callback:
-            # Set up hold duration tracking
-            self.button.when_pressed = self._on_press
-            self.button.when_released = lambda: self._on_release(hold_callback)
+            def on_press():
+                self._hold_start = time.time()
+                logger.debug(f"{self.function} button pressed at {self._hold_start}")
+                if self._press_callback:  # Call press callback if it exists
+                    self._press_callback()
+    
+            self.button.when_pressed = on_press
+            self.button.when_released = self._on_release  # Changed this line
+        elif press_callback:
+            self.button.when_pressed = press_callback
 
-    def _on_press(self) -> None:
-        """Store the time when button is pressed"""
-        self._hold_start = time.time()
-        logger.debug(f"Button press recorded at {self._hold_start}")
-
-    def _on_release(self, callback: Callable[[float], None]) -> None:
-        """
-        Calculate hold duration and call the callback when button is released
-        
-        Args:
-            callback: Function to call with the hold duration
-        """
-        if self._hold_start is not None:
+    def _on_release(self) -> None:
+        """Handle button release and calculate hold duration"""
+        if self._hold_start is not None and self._hold_callback:
             hold_duration = time.time() - self._hold_start
-            logger.debug(f"Button released after {hold_duration:.2f} seconds")
-            self._hold_start = None
-            callback(hold_duration)
+            logger.debug(f"{self.function} button released after {hold_duration:.2f}s")
+            self._hold_callback(hold_duration)
+        self._hold_start = None
 
     def cleanup(self) -> None:
         """

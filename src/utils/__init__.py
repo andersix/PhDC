@@ -10,7 +10,6 @@ from .exceptions import (
     ServiceError,
     ConfigError
 )
-
 __all__ = [
     'Config',
     'ButtonFunction',
@@ -23,4 +22,3 @@ __all__ = [
     'ServiceError',
     'ConfigError'
 ]
-

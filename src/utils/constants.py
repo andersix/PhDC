@@ -3,14 +3,19 @@ from enum import Enum
 from pathlib import Path
 
 class ButtonFunction(Enum):
-    BRIGHTNESS = "brightness"
-    GRAVITY = "gravity"
-    UPDATE = "update"
-    SYSTEM = "system"
+    """Enumeration of button functions"""
+    BRIGHTNESS_SYSTEM = "brightness_system"
+    UPDATE_SELECT = "update_select"
+    CONFIRM_1 = "confirm_1"  # First confirmation option in either mode
+    CONFIRM_2 = "confirm_2"  # Second confirmation option in either mode
 
 # Timing constants
 CONFIRMATION_TIMEOUT = 30  # seconds
 FEEDBACK_DELAY = 3        # seconds for user feedback messages
+
+# Hold time thresholds
+SYSTEM_CONTROL_HOLD = 5.0  # seconds for system control activation
+UPDATE_SELECT_HOLD = 1.0   # seconds for update selection activation
 
 # Paths
 ROOT_DIR = Path(__file__).parent.parent.parent

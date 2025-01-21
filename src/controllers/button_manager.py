@@ -29,7 +29,8 @@ class ButtonManager:
             self.backlight = DisplayBacklight()
             self.display = display_manager
             self.pihole = PiHole(display_manager=self.display, backlight=self.backlight)
-            self.system = SystemOs()
+            self.system = SystemOs(display_manager=self.display)
+            
         except Exception as e:
             error_msg = f"Failed to initialize controllers: {str(e)}"
             logger.critical(error_msg)
@@ -46,9 +47,6 @@ class ButtonManager:
             config: ButtonConfig object for the new button
             callback: Optional function to call when button is pressed
             hold_callback: Optional function to call when button is held
-            
-        Raises:
-            ButtonError: If button initialization fails
         """
         try:
             button = ButtonHandler(
@@ -57,11 +55,18 @@ class ButtonManager:
                 hold_callback=hold_callback
             )
             self.buttons.append(button)
-            logger.info(f"Added button on pin {config.pin}")
+            logger.info(f"Added button {config.function} on pin {config.pin}")
         except Exception as e:
-            error_msg = f"Failed to add button on pin {config.pin} {type(config.pin)}: {str(e)}"
+            error_msg = f"Failed to add button on pin {config.pin}: {str(e)}"
             logger.error(error_msg)
             raise ButtonError(error_msg)
+
+    def cancel_confirmation(self) -> None:
+        """Cancel any pending confirmation in either pihole or system mode"""
+        if self.pihole._waiting_for_confirmation:
+            self.pihole.cancel_update()
+        elif self.system._waiting_for_confirmation:
+            self.system.cancel_confirmation()
 
     def cleanup(self) -> None:
         """Clean up all managed resources"""

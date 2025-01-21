@@ -13,26 +13,26 @@ display:
 buttons:
   '1':
     pin: 17
-    function: "brightness"
-    hold_time: 0.0
+    function: "brightness_system"
+    hold_time: 5.0  # 5 seconds for system control
     pull_up: true
     bounce_time: 0.05
   '2':
     pin: 22
-    function: "gravity"
-    hold_time: 1.0
+    function: "update_select"
+    hold_time: 1.0  # 1 second for update selection
     pull_up: true
     bounce_time: 0.05
   '3':
     pin: 23
-    function: "update"
-    hold_time: 2.0
+    function: "confirm_1"  # First confirmation option in either mode
+    hold_time: 0.0
     pull_up: true
     bounce_time: 0.05
   '4':
     pin: 27
-    function: "system"
-    hold_time: 2.0
+    function: "confirm_2"  # Second confirmation option in either mode
+    hold_time: 0.0
     pull_up: true
     bounce_time: 0.05
 

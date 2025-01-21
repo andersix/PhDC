@@ -46,92 +46,73 @@ class DisplayManager:
             logger.error(f"Error checking PADD session: {e}")
             return False
 
-    def show_gravity_update(self) -> bool:
+    def show_update_selection(self) -> bool:
         """
-        Show gravity update check and wait for confirmation
+        Show update selection screen
         
         Returns:
-            bool: True if display switched successfully, False otherwise
+            bool: True if display switched successfully
         """
         try:
-            logger.debug("Switching to control window for gravity update")
+            logger.debug("Switching to control window for update selection")
             self.tmux.switch_window(self.control_window)
             
-            # Clear screen and ensure we're at top
             self._clear_screen()
             
-            # Show prompt
-            logger.info("Displaying gravity update confirmation prompt")
-            print("\n" * 2)  # Add some padding at top
-            print("Pi-hole Gravity Update")
+            print("\n" * 2)
+            print("Pi-hole Update Selection")
             print("----------------------")
-            print("\nThis will update Pi-hole's gravity lists.")
-            print("This process typically takes a few minutes.")
-            print("\nPress Button 2 once to confirm update.")
-            print("Waiting 30 seconds for confirmation...")
-            print("\nPress any other button or wait 30 seconds to cancel.")
+            print("\nChoose update type:")
+            print("\nButton 3: Update Gravity Lists")
+            print("- Updates Pi-hole's blocklists")
+            print("- Takes a few minutes")
+            print("- Safe to run anytime")
+            print("\nButton 4: Update Pi-hole Core")
+            print("- Updates Pi-hole software")
+            print("- May take longer")
+            print("- Best to run during off-hours")
+            print("\nWaiting 30 seconds for selection...")
+            print("Timer will cancel if no button is pressed.")
             
             return True
             
         except Exception as e:
-            logger.error(f"Error in gravity update confirmation: {e}")
+            logger.error(f"Error showing update selection: {e}")
             return False
 
-    def show_pihole_update(self) -> bool:
+    def show_system_control(self) -> bool:
         """
-        Show pihole update check and wait for confirmation
+        Show system control options
         
         Returns:
-            bool: True if display switched and check completed successfully
+            bool: True if display switched successfully
         """
         try:
-            logger.debug("Switching to control window for Pi-hole update")
+            logger.debug("Switching to control window for system control")
             self.tmux.switch_window(self.control_window)
             
-            # Clear screen and ensure we're at top
             self._clear_screen()
             
-            # Show update check status
-            logger.info("Checking for Pi-hole updates")
-            print("\n" * 2)  # Add some padding at top
-            print("Checking for Pi-hole Updates")
-            print("---------------------------")
-            
-            # Run update check
-            process = subprocess.Popen(
-                ['sudo', 'pihole', '-up', '--check-only'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
-            )
-            
-            # Show real-time output
-            while process.poll() is None:
-                line = process.stdout.readline()
-                if line:
-                    print(line.rstrip())
-            
-            # Get final result
-            returncode = process.wait()
-            
-            if returncode != 0:
-                logger.error("Pi-hole update check failed")
-                print("\nUpdate check failed!")
-                time.sleep(FEEDBACK_DELAY)
-                return False
-                
-            # Show confirmation prompt
-            print("\nUpdates are available.")
-            print("\nPress Button 3 once to confirm update.")
-            print("Waiting 30 seconds for confirmation...")
-            print("\nPress any other button or wait 30 seconds to cancel.")
+            print("\n" * 2)
+            print("System Control Options")
+            print("--------------------")
+            print("\nWARNING: These actions will affect system power state!")
+            print("\nChoose an option:")
+            print("\nButton 3: Restart System")
+            print("- Performs a clean system reboot")
+            print("- All services will restart")
+            print("- System will be unavailable briefly")
+            print("\nButton 4: Shutdown System")
+            print("- Performs a clean shutdown")
+            print("- System will power off")
+            print("- Requires physical power cycle to restart")
+            print("\nWaiting 30 seconds for selection...")
+            print("Timer will cancel if no button is pressed.")
             
             return True
             
         except Exception as e:
-            logger.error(f"Error in update check: {e}")
+            logger.error(f"Error showing system control: {e}")
             return False
 
     def switch_to_padd(self) -> None:
