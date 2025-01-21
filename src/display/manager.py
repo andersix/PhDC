@@ -1,4 +1,4 @@
-# vim: set ts=4 sw=4 sts=4 expandtab ai si ff=unix fileencoding=utf-8 textwidth=79:
+# vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
 
 import subprocess
 import time
@@ -60,19 +60,16 @@ class DisplayManager:
             self._clear_screen()
             
             print("\n" * 2)
-            print("Pi-hole Update Selection")
-            print("----------------------")
-            print("\nChoose update type:")
-            print("\nButton 3: Update Gravity Lists")
-            print("- Updates Pi-hole's blocklists")
-            print("- Takes a few minutes")
-            print("- Safe to run anytime")
-            print("\nButton 4: Update Pi-hole Core")
-            print("- Updates Pi-hole software")
-            print("- May take longer")
-            print("- Best to run during off-hours")
-            print("\nWaiting 30 seconds for selection...")
-            print("Timer will cancel if no button is pressed.")
+            print("+--------------------------------+")
+            print("|     Pi-hole Update Request     |")
+            print("+--------------------------------+")
+            print("\n  Press Button 3 to update gravity")
+            print("  - Update the list of ad-serving domains")
+            print("\n  Press Button 4 to update Pi-hole")
+            print("  - Update Pi-hole subsystems")
+            print("  - Best to run during off-hours")
+            print("\n  Update request will cancel in 30 seconds")
+            print("  if no button is pressed.")
             
             return True
             
@@ -94,20 +91,16 @@ class DisplayManager:
             self._clear_screen()
             
             print("\n" * 2)
-            print("System Control Options")
-            print("--------------------")
-            print("\nWARNING: These actions will affect system power state!")
-            print("\nChoose an option:")
-            print("\nButton 3: Restart System")
-            print("- Performs a clean system reboot")
-            print("- All services will restart")
-            print("- System will be unavailable briefly")
-            print("\nButton 4: Shutdown System")
-            print("- Performs a clean shutdown")
-            print("- System will power off")
-            print("- Requires physical power cycle to restart")
-            print("\nWaiting 30 seconds for selection...")
-            print("Timer will cancel if no button is pressed.")
+            print("+--------------------------------+")
+            print("|     System Control Request     |")
+            print("+--------------------------------+")
+            print("\n  *** WARNING ***")
+            print("\n  Press Button 3 to Restart System")
+            print("  - Performs a clean system reboot")
+            print("\n  Press Button 4 to Shutdown System")
+            print("  - Performs a clean shutdown")
+            print("\n  Update request will cancel in 30 seconds")
+            print("  if no button is pressed.")
             
             return True
             
@@ -135,30 +128,4 @@ class DisplayManager:
         except subprocess.SubprocessError as e:
             logger.error(f"Failed to clear screen: {e}")
             raise DisplayError(f"Failed to clear screen: {e}")
-
-    def execute_command(self, command: list[str]) -> tuple[int, str, str]:
-        """
-        Execute a command and capture its output
-        
-        Args:
-            command: Command list to execute
-            
-        Returns:
-            tuple containing (return_code, stdout, stderr)
-        """
-        try:
-            logger.debug(f"Executing command: {' '.join(command)}")
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=False
-            )
-            if result.returncode != 0:
-                logger.warning(f"Command returned non-zero exit code: {result.returncode}")
-                logger.debug(f"stderr: {result.stderr}")
-            return result.returncode, result.stdout, result.stderr
-        except subprocess.SubprocessError as e:
-            logger.error(f"Command execution failed: {e}")
-            raise DisplayError(f"Command execution failed: {e}")
 

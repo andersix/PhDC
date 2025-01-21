@@ -1,4 +1,4 @@
-# vim: set ts=4 sw=4 sts=4 expandtab ai si ff=unix fileencoding=utf-8 textwidth=79:
+# vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
 
 import time
 import signal
@@ -82,14 +82,13 @@ def main():
                 hold_callback=hold_callback
             )
 
-        logger.info("Application started successfully")
+        logger.info("Pihole Display started successfully")
 
-        # Keep the program running
-        while True:
-            time.sleep(1)  # Just keep main thread alive, no active polling needed
+        # Keep this sumbitch runnin...
+        signal.pause()
 
     except KeyboardInterrupt:
-        logger.info("Application terminated by user")
+        logger.info("Pihole Display terminated by user")
     except Exception as e:
         logger.critical(f"Unexpected error: {str(e)}", exc_info=True)
         raise

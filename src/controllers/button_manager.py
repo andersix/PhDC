@@ -1,4 +1,4 @@
-# vim: set ts=4 sw=4 sts=4 expandtab ai si ff=unix fileencoding=utf-8 textwidth=79:
+# vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
 
 from typing import List, Callable, Optional
 import logging
@@ -26,11 +26,10 @@ class ButtonManager:
         self.buttons: List[ButtonHandler] = []
         try:
             logger.info("Initializing ButtonManager and controllers")
-            self.backlight = DisplayBacklight()
             self.display = display_manager
-            self.pihole = PiHole(display_manager=self.display, backlight=self.backlight)
+            self.backlight = DisplayBacklight()
+            self.pihole = PiHole(display_manager=self.display)
             self.system = SystemOs(display_manager=self.display)
-            
         except Exception as e:
             error_msg = f"Failed to initialize controllers: {str(e)}"
             logger.critical(error_msg)
@@ -71,10 +70,13 @@ class ButtonManager:
     def cleanup(self) -> None:
         """Clean up all managed resources"""
         logger.info("Starting cleanup of ButtonManager")
-        for button in self.buttons:
-            button.cleanup()
-        self.backlight.cleanup()
-        self.pihole.cleanup()
-        self.system.cleanup()
-        logger.info("Cleanup completed")
+        try:
+            for button in self.buttons:
+                button.cleanup()
+            self.backlight.cleanup()
+            self.pihole.cleanup()
+            self.system.cleanup()
+            logger.info("Cleanup completed successfully")
+        except Exception as e:
+            logger.error(f"Error during cleanup: {str(e)}")
 

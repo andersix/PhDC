@@ -1,5 +1,3 @@
-# vim: set ts=4 sw=4 sts=4 expandtab ai si ff=unix fileencoding=utf-8 textwidth=79:
-
 from .models import ButtonConfig
 from .controllers import ButtonManager
 from .display import DisplayBacklight, DisplayManager, TMuxController

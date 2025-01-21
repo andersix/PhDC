@@ -3,7 +3,7 @@ display:
   backlight:
     pin: 18
     pwm_frequency: 240
-    gamma: 2.2
+    gamma: 1.8
     retry_attempts: 3
   tmux:
     session_name: 'padd'

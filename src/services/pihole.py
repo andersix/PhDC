@@ -1,4 +1,4 @@
-# vim: set ts=4 sw=4 sts=4 expandtab ai si ff=unix fileencoding=utf-8 textwidth=79:
+# vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
 
 import subprocess
 import time
@@ -7,7 +7,6 @@ from threading import Timer
 from typing import Optional
 from ..utils.exceptions import ServiceError
 from ..utils.constants import CONFIRMATION_TIMEOUT, FEEDBACK_DELAY
-from ..display.backlight import DisplayBacklight
 from ..display.manager import DisplayManager
 
 logger = logging.getLogger('DisplayController')
@@ -15,17 +14,15 @@ logger = logging.getLogger('DisplayController')
 class PiHole:
     """Manages PiHole operations"""
     
-    def __init__(self, display_manager: DisplayManager, backlight: Optional[DisplayBacklight] = None):
+    def __init__(self, display_manager: DisplayManager):
         """
         Initialize PiHole controller
         
         Args:
             display_manager: DisplayManager instance for output control
-            backlight: Optional DisplayBacklight instance for visual feedback
         """
         try:
             self.display = display_manager
-            self.backlight = backlight
             self._waiting_for_confirmation = False
             self._confirmation_timer: Optional[Timer] = None
             logger.info("Initializing PiHole controller")
@@ -90,12 +87,18 @@ class PiHole:
             self._clear_confirmation_state()
             self.update_pihole()
 
-    def update_gravity(self) -> None:
-        """Execute gravity update after confirmation"""
-        logger.info("Starting gravity update")
+    def _run_pihole_command(self, command: list[str], operation: str) -> None:
+        """
+        Execute a Pi-hole command with proper output handling
+        
+        Args:
+            command: Command list to execute
+            operation: Name of operation for logging
+        """
+        logger.info(f"Starting Pi-hole {operation}")
         try:
             process = subprocess.Popen(
-                ['sudo', 'pihole', '-g'],
+                command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -111,54 +114,27 @@ class PiHole:
             returncode = process.wait()
             
             if returncode == 0:
-                logger.info("Gravity update completed successfully")
-                print("\nGravity update completed successfully")
+                logger.info(f"{operation} completed successfully")
+                print(f"\n{operation} completed successfully")
             else:
-                logger.error("Gravity update failed")
-                print("\nGravity update failed")
+                logger.error(f"{operation} failed")
+                print(f"\n{operation} failed")
                 
         except subprocess.SubprocessError as e:
-            logger.error(f"Failed to update gravity: {str(e)}")
-            print(f"\nError: Failed to update gravity: {str(e)}")
-            raise ServiceError(f"Failed to update gravity: {str(e)}")
+            logger.error(f"Failed to {operation}: {str(e)}")
+            print(f"\nError: Failed to {operation}: {str(e)}")
+            raise ServiceError(f"Failed to {operation}: {str(e)}")
         finally:
             time.sleep(FEEDBACK_DELAY)
             self.display.switch_to_padd()
 
+    def update_gravity(self) -> None:
+        """Execute gravity update"""
+        self._run_pihole_command(['sudo', 'pihole', '-g'], 'gravity update')
+
     def update_pihole(self) -> None:
-        """Execute Pi-hole update after confirmation"""
-        logger.info("Starting Pi-hole update")
-        try:
-            process = subprocess.Popen(
-                ['sudo', 'pihole', '-up'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1,
-                universal_newlines=True
-            )
-            
-            while process.poll() is None:
-                line = process.stdout.readline()
-                if line:
-                    print(line.rstrip())
-            
-            returncode = process.wait()
-            
-            if returncode == 0:
-                logger.info("Pi-hole update completed successfully")
-                print("\nPi-hole update completed successfully")
-            else:
-                logger.error("Pi-hole update failed")
-                print("\nPi-hole update failed")
-                
-        except subprocess.SubprocessError as e:
-            logger.error(f"Failed to update Pi-hole: {str(e)}")
-            print(f"\nError: Failed to update Pi-hole: {str(e)}")
-            raise ServiceError(f"Failed to update Pi-hole: {str(e)}")
-        finally:
-            time.sleep(FEEDBACK_DELAY)
-            self.display.switch_to_padd()
+        """Execute Pi-hole update"""
+        self._run_pihole_command(['sudo', 'pihole', '-up'], 'Pi-hole update')
 
     def cleanup(self) -> None:
         """Clean up PiHole resources"""
