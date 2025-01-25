@@ -1,11 +1,16 @@
-# src/utils/config.py
+# vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
+
 import yaml
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Dict
-from .constants import CONFIG_DIR, LOG_DIR
 from .exceptions import ConfigError
+
+# Base paths defined here
+ROOT_DIR = Path(__file__).parent.parent.parent
+CONFIG_DIR = ROOT_DIR / 'config'
+LOG_DIR = ROOT_DIR / 'log'
 
 class Config:
     """Configuration handler for PiHole Display"""
@@ -58,4 +63,14 @@ class Config:
     def buttons(self) -> Dict[str, Any]:
         """Get buttons configuration"""
         return self._config.get('buttons', {})
+
+    @property
+    def timing(self) -> Dict[str, Any]:
+        """Get timing configuration"""
+        return self._config.get('timing', {})
+
+    @property
+    def paths(self) -> Dict[str, Any]:
+        """Get paths configuration"""
+        return self._config.get('paths', {})
 

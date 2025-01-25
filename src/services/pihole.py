@@ -6,18 +6,22 @@ import logging
 from threading import Timer
 from typing import Optional
 from ..utils.exceptions import ServiceError
-from ..utils.constants import CONFIRMATION_TIMEOUT, FEEDBACK_DELAY
+from ..utils.constants import (
+    CONFIRMATION_TIMEOUT, 
+    FEEDBACK_DELAY,
+    UPDATE_SELECT_HOLD
+)
 from ..display.manager import DisplayManager
 
 logger = logging.getLogger('DisplayController')
 
 class PiHole:
-    """Manages PiHole operations"""
-    
+    """Manages PiHole requests and operations"""
+
     def __init__(self, display_manager: DisplayManager):
         """
         Initialize PiHole controller
-        
+
         Args:
             display_manager: DisplayManager instance for output control
         """
@@ -65,7 +69,7 @@ class PiHole:
         """Handle button 2 hold event for showing update selection"""
         logger.info(f"Button 2 held for {hold_time:.1f} seconds")
         
-        if hold_time >= 1.0:
+        if hold_time >= UPDATE_SELECT_HOLD:  # Using constant from config
             logger.info("Showing update selection")
             self._waiting_for_confirmation = True
             self._start_confirmation_timer()
@@ -90,7 +94,7 @@ class PiHole:
     def _run_pihole_command(self, command: list[str], operation: str) -> None:
         """
         Execute a Pi-hole command with proper output handling
-        
+
         Args:
             command: Command list to execute
             operation: Name of operation for logging
@@ -105,21 +109,21 @@ class PiHole:
                 bufsize=1,
                 universal_newlines=True
             )
-            
+
             while process.poll() is None:
                 line = process.stdout.readline()
                 if line:
                     print(line.rstrip())
-            
+
             returncode = process.wait()
-            
+
             if returncode == 0:
                 logger.info(f"{operation} completed successfully")
                 print(f"\n{operation} completed successfully")
             else:
                 logger.error(f"{operation} failed")
                 print(f"\n{operation} failed")
-                
+
         except subprocess.SubprocessError as e:
             logger.error(f"Failed to {operation}: {str(e)}")
             print(f"\nError: Failed to {operation}: {str(e)}")

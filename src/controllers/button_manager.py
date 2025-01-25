@@ -15,11 +15,11 @@ logger = logging.getLogger('DisplayController')
 
 class ButtonManager:
     """Manages multiple button instances and their associated controllers"""
-    
+
     def __init__(self, display_manager: DisplayManager):
         """
         Initialize button manager and controllers
-        
+
         Args:
             display_manager: DisplayManager instance for display control
         """
@@ -27,8 +27,7 @@ class ButtonManager:
         try:
             logger.info("Initializing ButtonManager and controllers")
             self.display = display_manager
-            self.backlight = DisplayBacklight()
-            # Pass backlight to display manager
+            self.backlight = DisplayBacklight() # Pass backlight to display manager
             self.display.set_backlight(self.backlight)
             self.pihole = PiHole(display_manager=self.display)
             self.system = SystemOs(display_manager=self.display)
@@ -37,13 +36,13 @@ class ButtonManager:
             logger.critical(error_msg)
             raise ButtonError(error_msg)
 
-    def add_button(self, 
-                  config: ButtonConfig, 
+    def add_button(self,
+                  config: ButtonConfig,
                   callback: Optional[Callable[[], None]] = None,
                   hold_callback: Optional[Callable[[float], None]] = None) -> None:
         """
         Add a new button to manage
-        
+
         Args:
             config: ButtonConfig object for the new button
             callback: Optional function to call when button is pressed

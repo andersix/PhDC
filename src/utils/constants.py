@@ -1,28 +1,36 @@
-# src/utils/constants.py
+# vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
+
 from enum import Enum
-from pathlib import Path
+from .config import Config
 
 class ButtonFunction(Enum):
     """Enumeration of button functions"""
-    BRIGHTNESS_SYSTEM = "brightness_system"  # Button 1: Brightness control and system operations
-    UPDATE_SELECT = "update_select"          # Button 2: Update menu selection
-    CONFIRM_1 = "confirm_1"                  # Button 3: First confirmation option
-    CONFIRM_2 = "confirm_2"                  # Button 4: Second confirmation option
+    BRIGHTNESS_SYSTEM = "brightness_system"
+    UPDATE_SELECT = "update_select"
+    CONFIRM_1 = "confirm_1"
+    CONFIRM_2 = "confirm_2"
+
+# Load config
+config = Config()
+timing_config = config.timing
+paths_config = config.paths
 
 # Timing constants
-CONFIRMATION_TIMEOUT = 30  # seconds to wait for user confirmation
-FEEDBACK_DELAY = 3        # seconds to show feedback messages
+CONFIRMATION_TIMEOUT = timing_config.get('confirmation_timeout', 30)
+FEEDBACK_DELAY = timing_config.get('feedback_delay', 3)
 
 # Button hold thresholds
-SYSTEM_CONTROL_HOLD = 5.0  # seconds to hold for system control activation
-UPDATE_SELECT_HOLD = 1.0   # seconds to hold for update selection
+button_config = config.buttons
+SYSTEM_CONTROL_HOLD = float(button_config['1'].get('hold_time', 5.0))
+UPDATE_SELECT_HOLD = float(button_config['2'].get('hold_time', 1.0))
 
-# PWM settings
-PWM_FREQUENCY = 240  # Hz - matches config.yaml default
-GAMMA_CORRECTION = 2.2  # Standard gamma correction value
+# Default paths
+DEFAULT_PADD_SCRIPT = "/home/pi/PADD/padd.sh"
+DEFAULT_PYTHON_PATH = "/usr/bin/python3"
+DEFAULT_MAIN_SCRIPT = "/home/pi/pihole_display/main.py"
 
-# Paths
-ROOT_DIR = Path(__file__).parent.parent.parent
-CONFIG_DIR = ROOT_DIR / 'config'
-LOG_DIR = ROOT_DIR / 'log'
+# Configured paths
+PADD_SCRIPT_PATH = paths_config.get('padd_script', DEFAULT_PADD_SCRIPT)
+PYTHON_PATH = paths_config.get('python_path', DEFAULT_PYTHON_PATH)
+MAIN_SCRIPT_PATH = paths_config.get('main_script', DEFAULT_MAIN_SCRIPT)
 

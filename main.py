@@ -31,7 +31,7 @@ def main():
         cancellation_in_progress = False
 
         def button1_pressed():
-            """Handle button 1 press - cycle brightness"""
+            """Handle button 1 press - cycles LCD brightness"""
             if manager.pihole._waiting_for_confirmation or manager.system._waiting_for_confirmation:
                 # Cancel any pending confirmations
                 manager.cancel_confirmation()
@@ -44,7 +44,7 @@ def main():
                 logger.error(f"Error handling button 1 press: {str(e)}")
 
         def button1_held(hold_time: float):
-            """Handle button 1 hold - system control selection"""
+            """Handle button 1 hold - system control request: reboot|shutdown """
             if manager.pihole._waiting_for_confirmation or manager.system._waiting_for_confirmation:
                 manager.cancel_confirmation()
                 return
@@ -63,7 +63,7 @@ def main():
             logger.debug("Not in confirmation mode - no action needed")
         
         def button2_held(hold_time: float):
-            """Handle button 2 hold - update selection"""
+            """Handle button 2 hold - pihole update request"""
             nonlocal cancellation_in_progress
             logger.debug(f"Button 2 held for {hold_time:.1f} seconds")
             
@@ -110,7 +110,7 @@ def main():
                 hold_callback=hold_callback
             )
 
-        logger.info("Application started successfully")
+        logger.info("PiHole Display started successfully")
 
         # Set up signal handlers
         def cleanup_handler(signum, frame):

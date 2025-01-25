@@ -14,30 +14,30 @@ logger = logging.getLogger('DisplayController')
 class ButtonHandler:
     """
     A class to handle button input using gpiozero Button
-    
-    This class provides a wrapper around GPIOZero's Button class,
-    adding support for hold duration tracking and custom callbacks.
+
+    This class is a wrapper around GPIOZero's Button class,
+    adding hold duration tracking and custom callbacks.
     """
-    
-    def __init__(self, 
-                 config: ButtonConfig, 
+
+    def __init__(self,
+                 config: ButtonConfig,
                  callback: Optional[Callable[[], None]] = None,
                  hold_callback: Optional[Callable[[float], None]] = None):
         """
         Initialize the button handler.
-        
+
         Args:
             config: ButtonConfig object containing pin and setup information
             callback: Optional function to call when button is pressed
             hold_callback: Optional function to call when button is released after hold
-            
+
         Raises:
             ButtonError: If initialization fails
         """
         try:
             self._hold_start: Optional[float] = None
             self.function = config.function
-            
+
             self.button = GPIOButton(
                 pin=config.pin,
                 pull_up=config.pull_up,
@@ -45,38 +45,38 @@ class ButtonHandler:
                 hold_time=config.hold_time,
                 hold_repeat=config.hold_repeat
             )
-            
+
             self._setup_callbacks(callback, hold_callback)
-                
+
             logger.info(f"Initialized {self.function} button on pin {config.pin}")
-            
+
         except GPIOZeroError as e:
             error_msg = f"Failed to initialize button on pin {config.pin}: {str(e)}"
             logger.error(error_msg)
             raise ButtonError(error_msg)
 
-    def _setup_callbacks(self, 
+    def _setup_callbacks(self,
                         press_callback: Optional[Callable[[], None]],
                         hold_callback: Optional[Callable[[float], None]]) -> None:
         """
         Set up button callbacks
-        
+
         Args:
             press_callback: Function to call on button press
             hold_callback: Function to call on button hold release
         """
         self._press_callback = press_callback
         self._hold_callback = hold_callback
-    
+
         if hold_callback:
             def on_press():
                 self._hold_start = time.time()
                 logger.debug(f"{self.function} button pressed at {self._hold_start}")
                 if self._press_callback:  # Call press callback if it exists
                     self._press_callback()
-    
+
             self.button.when_pressed = on_press
-            self.button.when_released = self._on_release  # Changed this line
+            self.button.when_released = self._on_release
         elif press_callback:
             self.button.when_pressed = press_callback
 
@@ -91,7 +91,7 @@ class ButtonHandler:
     def cleanup(self) -> None:
         """
         Clean up button resources
-        
+
         This method ensures proper cleanup of GPIO resources
         """
         try:

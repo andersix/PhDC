@@ -1,11 +1,16 @@
 # vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:fileformat=unix:
+
 import subprocess
 import logging
 from threading import Timer
 import time
 from typing import Optional
 from ..utils.exceptions import ServiceError
-from ..utils.constants import CONFIRMATION_TIMEOUT, FEEDBACK_DELAY
+from ..utils.constants import (
+    CONFIRMATION_TIMEOUT, 
+    FEEDBACK_DELAY,
+    SYSTEM_CONTROL_HOLD
+)
 from ..display.manager import DisplayManager
 
 logger = logging.getLogger('DisplayController')
@@ -48,7 +53,7 @@ class SystemOs:
         """Cancel pending system control confirmation"""
         if self._waiting_for_confirmation:
             logger.info("System control cancelled")
-            print("\n    System control cancelled")
+            print("\nSystem control cancelled")
             self._clear_confirmation_state()
             time.sleep(FEEDBACK_DELAY)
             self.display.switch_to_padd()
@@ -57,7 +62,7 @@ class SystemOs:
         """Handle button 1 hold for system control"""
         logger.info(f"Button 1 held for {hold_time:.1f} seconds")
         
-        if hold_time >= 5.0:  # Only activate after 5 seconds
+        if hold_time >= SYSTEM_CONTROL_HOLD:  # Using constant from config
             logger.info("Showing system control options")
             self._waiting_for_confirmation = True
             self._start_confirmation_timer()
@@ -81,7 +86,7 @@ class SystemOs:
         """Handle system reboot"""
         logger.info("Initiating system reboot")
         try:
-            print("\n    Rebooting system...")
+            print("\nRebooting system...")
             time.sleep(FEEDBACK_DELAY)
             subprocess.run(['sudo', 'reboot'], check=True)
         except subprocess.SubprocessError as e:
@@ -92,7 +97,7 @@ class SystemOs:
         """Handle system shutdown"""
         logger.info("Initiating system shutdown")
         try:
-            print("\n    Shutting down system...")
+            print("\nShutting down system...")
             time.sleep(FEEDBACK_DELAY)
             subprocess.run(['sudo', 'shutdown', '-h', 'now'], check=True)
         except subprocess.SubprocessError as e:

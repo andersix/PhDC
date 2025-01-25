@@ -1,45 +1,45 @@
-# pihole_display/config/config.yaml
 display:
   backlight:
     pin: 18
     pwm_frequency: 240
-    gamma: 1.8
+    gamma: 1.9
     retry_attempts: 3
-  tmux:
-    session_name: 'display'
-    padd_window: 'padd'
-    control_window: 'control'
+    brightness_levels: [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
 
 buttons:
   '1':
     pin: 17
     function: "brightness_system"
-    hold_time: 5.0  # Hold for 5 seconds to enter system request
+    hold_time: 5.0  # System control activation
     pull_up: true
     bounce_time: 0.05
   '2':
     pin: 22
     function: "update_select"
-    hold_time: 1.0  # Hold for 1 second to enter update request
+    hold_time: 1.0  # Update selection activation
     pull_up: true
     bounce_time: 0.05
   '3':
     pin: 23
-    function: "confirm_1"  # First confirmation option used in system/update request
+    function: "confirm_1"
     hold_time: 0.0
     pull_up: true
     bounce_time: 0.05
   '4':
     pin: 27
-    function: "confirm_2"  # Second confirmation option used in system/update request
+    function: "confirm_2"
     hold_time: 0.0
     pull_up: true
     bounce_time: 0.05
+
+timing:
+  confirmation_timeout: 30
+  feedback_delay: 3
 
 logging:
   file: "pihole_display.log"
   level: "INFO"
 #  level: "DEBUG"
-  max_bytes: 1048576  # Rotate every 1MB
-  backup_count: 5 # only keep this many logs
+  max_bytes: 1048576
+  backup_count: 5
 

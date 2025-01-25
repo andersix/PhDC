@@ -15,9 +15,12 @@ class DisplayManager:
     """Manages display output and PADD integration"""
 
     def __init__(self):
-        """Initialize display manager with TMux controller"""
+        """
+        Initialize display manager with TMux controller.
+        One tmux window for PADD, one for the PiHole update
+        """
         self.tmux = TMuxController()
-        self.backlight = None  # Will be set by ButtonManager
+        self.backlight = None  # set by ButtonManager
         self._previous_brightness = 1.0  # Store previous brightness level
         config = Config().display.get('tmux', {})
         self.session_name = config.get('session_name', 'display')
@@ -31,9 +34,7 @@ class DisplayManager:
     def check_padd(self) -> bool:
         """
         Verify PADD session exists and is running
-
-        Returns:
-            bool: True if session exists, False otherwise
+        Returns: True if session exists, False otherwise
         """
         try:
             logger.debug("Checking for PADD tmux session")
@@ -56,9 +57,7 @@ class DisplayManager:
     def show_update_selection(self) -> bool:
         """
         Show update selection screen
-
-        Returns:
-            bool: True if display switched successfully
+        Returns: True if display switched successfully
         """
         try:
             logger.debug("Switching to control window for update selection")
@@ -93,9 +92,7 @@ class DisplayManager:
     def show_system_control(self) -> bool:
         """
         Show system control options
-
-        Returns:
-            bool: True if display switched successfully
+        Returns: True if display switched successfully
         """
         try:
             logger.debug("Switching to control window for system control")
@@ -127,9 +124,9 @@ class DisplayManager:
             return False
 
     def switch_to_padd(self) -> None:
-        """Switch back to PADD window"""
+        """Switch to PADD window"""
         try:
-            logger.debug("Switching back to PADD window")
+            logger.debug("Switching to PADD window")
             self.tmux.switch_window(self.padd_window)
             # Restore previous brightness
             if self.backlight:

@@ -7,7 +7,7 @@ from .utils.exceptions import ConfigError
 
 @dataclass
 class ButtonConfig:
-    """Configuration settings for a button"""
+    """Configuration class for PiTFT buttons"""
     pin: int
     function: str
     pull_up: bool = True
@@ -18,7 +18,7 @@ class ButtonConfig:
     def __post_init__(self):
         """
         Validate configuration after initialization
-        
+
         Raises:
             ConfigError: If button function is invalid
         """
@@ -34,10 +34,10 @@ class ButtonConfig:
         # Validate other parameters
         if not isinstance(self.pin, int):
             raise ConfigError(f"Pin must be an integer, got {type(self.pin)}")
-        
+
         if self.bounce_time <= 0:
             raise ConfigError(f"Bounce time must be positive, got {self.bounce_time}")
-        
+
         if self.hold_time is not None and self.hold_time < 0:
             raise ConfigError(f"Hold time cannot be negative, got {self.hold_time}")
 
