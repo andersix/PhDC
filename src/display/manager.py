@@ -4,6 +4,7 @@ import subprocess
 import time
 import logging
 from typing import Optional
+from pathlib import Path
 from ..utils.exceptions import DisplayError
 from ..utils.config import Config
 from .tmux import TMuxController
@@ -20,12 +21,12 @@ class DisplayManager:
         One tmux window for PADD, one for the PiHole update
         """
         self.tmux = TMuxController()
-        self.backlight = None  # set by ButtonManager
-        self._previous_brightness = 1.0  # Store previous brightness level
-        config = Config().display.get('tmux', {})
-        self.session_name = config.get('session_name', 'display')
-        self.padd_window = config.get('padd_window', 'padd')
-        self.control_window = config.get('control_window', 'control')
+        self.backlight = None  # Will be set by ButtonManager
+        self._previous_brightness = 1.0
+        config = Config().display['tmux']
+        self.session_name = config['session_name']
+        self.padd_window = config['padd_window']
+        self.control_window = config['control_window']
 
     def set_backlight(self, backlight: DisplayBacklight) -> None:
         """Set the backlight controller"""
@@ -70,17 +71,16 @@ class DisplayManager:
 
             self._clear_screen()
 
-            print("\n" * 2)
             print("    +--------------------------------+")
-            print("    |     Pi-hole Update Request     |")
+            print("    |       PiHole Update Menu       |")
             print("    +--------------------------------+")
-            print("\n    Button 3: Update Gravity")
+            print("\n    Button 2: Update Gravity")
             print("    - Updates blocklists")
-            print("    - Takes 2-3 minutes")
-            print("\n    Button 4: Update Pi-hole")
+            print("\n    Button 3: Update Pi-hole")
             print("    - Updates core software")
-            print("    - Takes 5+ minutes")
-            print("\n    Waiting 30s for selection...")
+            print("\n    Button 4: Update PADD")
+            print("    - Updates dashboard code")
+            print("\n    Waiting 30s for selection")
             print("    Any other button cancels")
 
             return True
@@ -105,11 +105,12 @@ class DisplayManager:
 
             self._clear_screen()
 
-            print("\n" * 2)
             print("    +--------------------------------+")
-            print("    |     System Control Request     |")
+            print("    |      System Control Menu       |")
             print("    +--------------------------------+")
-            print("\n    WARNING: Power state change!")
+            print("\n    WARNING: System or Power state change!")
+            print("\n    Button 2: Update System")
+            print("    - Updates RPi OS and system packages")
             print("\n    Button 3: Restart System")
             print("    - System will reboot")
             print("\n    Button 4: Shutdown System")

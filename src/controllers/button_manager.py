@@ -8,7 +8,7 @@ from ..models import ButtonConfig
 from ..hardware.button import ButtonHandler
 from ..display.backlight import DisplayBacklight
 from ..services.pihole import PiHole
-from ..services.system import SystemOs
+from ..services.system import SystemOps
 from ..display.manager import DisplayManager
 
 logger = logging.getLogger('DisplayController')
@@ -30,7 +30,7 @@ class ButtonManager:
             self.backlight = DisplayBacklight() # Pass backlight to display manager
             self.display.set_backlight(self.backlight)
             self.pihole = PiHole(display_manager=self.display)
-            self.system = SystemOs(display_manager=self.display)
+            self.system = SystemOps(display_manager=self.display)
         except Exception as e:
             error_msg = f"Failed to initialize controllers: {str(e)}"
             logger.critical(error_msg)

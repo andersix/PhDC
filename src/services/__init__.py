@@ -1,5 +1,5 @@
 from .pihole import PiHole
-from .system import SystemOs
+from .system import SystemOps
 
-__all__ = ['PiHole', 'SystemOs']
+__all__ = ['PiHole', 'SystemOps']
 

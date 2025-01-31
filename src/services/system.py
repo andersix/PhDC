@@ -7,7 +7,7 @@ import time
 from typing import Optional
 from ..utils.exceptions import ServiceError
 from ..utils.constants import (
-    CONFIRMATION_TIMEOUT, 
+    CONFIRMATION_TIMEOUT,
     FEEDBACK_DELAY,
     SYSTEM_CONTROL_HOLD
 )
@@ -15,19 +15,75 @@ from ..display.manager import DisplayManager
 
 logger = logging.getLogger('DisplayController')
 
-class SystemOs:
-    """Manages system-level operations like reboot and shutdown"""
-    
+class SystemOps:
+    """Manages system-level operations like reboot, shutdown and apt update/upgrade"""
+
     def __init__(self, display_manager: DisplayManager):
-        """Initialize SystemOs controller"""
+        """Initialize SystemOps controller"""
         try:
             self.display = display_manager
             self._waiting_for_confirmation = False
             self._confirmation_timer: Optional[Timer] = None
-            logger.info("Initializing SystemOs controller")
+            logger.info("Initializing SystemOps controller")
         except Exception as e:
-            logger.error(f"Failed to initialize SystemOs controller: {str(e)}")
-            raise ServiceError(f"Failed to initialize SystemOs controller: {str(e)}")
+            logger.error(f"Failed to initialize SystemOps controller: {str(e)}")
+            raise ServiceError(f"Failed to initialize SystemOps controller: {str(e)}")
+
+    def _run_system_command(self, command: list[str], operation: str) -> None:
+        """
+        Execute a system command with proper output handling
+
+        Args:
+            command: Command list to execute
+            operation: Operation name for logging
+        """
+        logger.info(f"Starting {operation}")
+        try:
+            process = subprocess.Popen(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                universal_newlines=True
+            )
+
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if line:
+                    print(line.rstrip())
+
+            returncode = process.wait()
+
+            if returncode == 0:
+                logger.info(f"{operation} completed successfully")
+                print(f"\n{operation} completed successfully")
+            else:
+                logger.error(f"{operation} failed")
+                print(f"\n{operation} failed")
+
+        except subprocess.SubprocessError as e:
+            logger.error(f"Failed to {operation}: {str(e)}")
+            print(f"\nError: Failed to {operation}: {str(e)}")
+            raise ServiceError(f"Failed to {operation}: {str(e)}")
+        finally:
+            time.sleep(FEEDBACK_DELAY)
+            if operation != "shutdown system":  # Don't switch back if shutting down
+                self.display.switch_to_padd()
+
+    def update_system(self) -> None:
+        """Execute system update"""
+        self._run_system_command(
+            ['sudo', 'apt-get', 'update', '&&', 'sudo', 'apt-get', '-y', 'full-upgrade'],
+            'system update'
+        )
+
+    def reboot_system(self) -> None:
+        """Handle system reboot"""
+        self._run_system_command(['sudo', 'reboot'], 'reboot system')
+
+    def shutdown_system(self) -> None:
+        """Handle system shutdown"""
+        self._run_system_command(['sudo', 'shutdown', '-h', 'now'], 'shutdown system')
 
     def _start_confirmation_timer(self) -> None:
         """Start confirmation timeout timer"""
@@ -53,7 +109,7 @@ class SystemOs:
         """Cancel pending system control confirmation"""
         if self._waiting_for_confirmation:
             logger.info("System control cancelled")
-            print("\nSystem control cancelled")
+            print("\n    System control cancelled")
             self._clear_confirmation_state()
             time.sleep(FEEDBACK_DELAY)
             self.display.switch_to_padd()
@@ -61,12 +117,19 @@ class SystemOs:
     def handle_button1_held(self, hold_time: float) -> None:
         """Handle button 1 hold for system control"""
         logger.info(f"Button 1 held for {hold_time:.1f} seconds")
-        
-        if hold_time >= SYSTEM_CONTROL_HOLD:  # Using constant from config
+
+        if hold_time >= SYSTEM_CONTROL_HOLD:
             logger.info("Showing system control options")
             self._waiting_for_confirmation = True
             self._start_confirmation_timer()
             self.display.show_system_control()
+
+    def handle_button2_press(self) -> None:
+        """Handle button 2 press - confirm update"""
+        if self._waiting_for_confirmation:
+            logger.info("System update confirmed")
+            self._clear_confirmation_state()
+            self.update_system()
 
     def handle_button3_press(self) -> None:
         """Handle button 3 press - confirm restart"""
@@ -82,33 +145,11 @@ class SystemOs:
             self._clear_confirmation_state()
             self.shutdown_system()
 
-    def reboot_system(self) -> None:
-        """Handle system reboot"""
-        logger.info("Initiating system reboot")
-        try:
-            print("\nRebooting system...")
-            time.sleep(FEEDBACK_DELAY)
-            subprocess.run(['sudo', 'reboot'], check=True)
-        except subprocess.SubprocessError as e:
-            logger.error(f"Failed to reboot system: {str(e)}")
-            raise ServiceError(f"Failed to reboot system: {str(e)}")
-
-    def shutdown_system(self) -> None:
-        """Handle system shutdown"""
-        logger.info("Initiating system shutdown")
-        try:
-            print("\nShutting down system...")
-            time.sleep(FEEDBACK_DELAY)
-            subprocess.run(['sudo', 'shutdown', '-h', 'now'], check=True)
-        except subprocess.SubprocessError as e:
-            logger.error(f"Failed to shutdown system: {str(e)}")
-            raise ServiceError(f"Failed to shutdown system: {str(e)}")
-
     def cleanup(self) -> None:
-        """Clean up SystemOs resources"""
+        """Clean up SystemOps resources"""
         try:
             self._clear_confirmation_state()
-            logger.info("Cleaned up SystemOs controller")
+            logger.info("Cleaned up SystemOps controller")
         except Exception as e:
-            logger.error(f"Error during SystemOs cleanup: {str(e)}")
+            logger.error(f"Error during SystemOps cleanup: {str(e)}")
 

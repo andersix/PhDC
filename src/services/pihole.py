@@ -5,10 +5,12 @@ import time
 import logging
 from threading import Timer
 from typing import Optional
+from pathlib import Path
 from ..utils.exceptions import ServiceError
 from ..utils.constants import (
-    CONFIRMATION_TIMEOUT, 
+    CONFIRMATION_TIMEOUT,
     FEEDBACK_DELAY,
+    PATHS,
     UPDATE_SELECT_HOLD
 )
 from ..display.manager import DisplayManager
@@ -19,12 +21,6 @@ class PiHole:
     """Manages PiHole requests and operations"""
 
     def __init__(self, display_manager: DisplayManager):
-        """
-        Initialize PiHole controller
-
-        Args:
-            display_manager: DisplayManager instance for output control
-        """
         try:
             self.display = display_manager
             self._waiting_for_confirmation = False
@@ -65,11 +61,18 @@ class PiHole:
             time.sleep(FEEDBACK_DELAY)
             self.display.switch_to_padd()
 
+    def handle_button2_press(self) -> None:
+        """Handle button 2 press for PADD update confirmation"""
+        if self._waiting_for_confirmation:
+            logger.info("PADD update selected")
+            self._clear_confirmation_state()
+            self.update_padd()
+
     def handle_button2_held(self, hold_time: float) -> None:
         """Handle button 2 hold event for showing update selection"""
         logger.info(f"Button 2 held for {hold_time:.1f} seconds")
-        
-        if hold_time >= UPDATE_SELECT_HOLD:  # Using constant from config
+
+        if hold_time >= UPDATE_SELECT_HOLD:
             logger.info("Showing update selection")
             self._waiting_for_confirmation = True
             self._start_confirmation_timer()
@@ -126,7 +129,7 @@ class PiHole:
 
         except subprocess.SubprocessError as e:
             logger.error(f"Failed to {operation}: {str(e)}")
-            print(f"\nError: Failed to {operation}: {str(e)}")
+            print(f"\n    Error: Failed to {operation}: {str(e)}")
             raise ServiceError(f"Failed to {operation}: {str(e)}")
         finally:
             time.sleep(FEEDBACK_DELAY)
@@ -139,6 +142,77 @@ class PiHole:
     def update_pihole(self) -> None:
         """Execute Pi-hole update"""
         self._run_pihole_command(['sudo', 'pihole', '-up'], 'Pi-hole update')
+
+    def update_padd(self) -> None:
+        """Check and update PADD if needed"""
+        logger.info("Starting PADD update check")
+        padd_dir = Path(PATHS['padd_dir'])
+
+        try:
+            print("\n    Checking PADD for updates...")
+
+            process = subprocess.Popen(
+                ['git', 'fetch'],
+                cwd=str(padd_dir),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                universal_newlines=True
+            )
+
+            process.wait()
+
+            process = subprocess.Popen(
+                ['git', 'status', '-uno'],
+                cwd=str(padd_dir),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                universal_newlines=True
+            )
+
+            status_output = ""
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if line:
+                    status_output += line
+                    print(line.rstrip())
+
+            if "Your branch is behind" in status_output:
+                print("\n    Updates available. Updating PADD...")
+
+                process = subprocess.Popen(
+                    ['git', 'pull'],
+                    cwd=str(padd_dir),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    universal_newlines=True
+                )
+
+                while process.poll() is None:
+                    line = process.stdout.readline()
+                    if line:
+                        print(line.rstrip())
+
+                if process.returncode == 0:
+                    logger.info("PADD updated successfully")
+                    print("\nPADD updated successfully")
+                else:
+                    logger.error("PADD update failed")
+                    print("\nPADD update failed")
+            else:
+                logger.info("PADD is already up to date")
+                print("\nPADD is already up to date")
+
+        except subprocess.SubprocessError as e:
+            logger.error(f"Failed to update PADD: {str(e)}")
+            print(f"\nError: Failed to update PADD: {str(e)}")
+            raise ServiceError(f"Failed to update PADD: {str(e)}")
+        finally:
+            time.sleep(FEEDBACK_DELAY)
+            self.display.switch_to_padd()
+
 
     def cleanup(self) -> None:
         """Clean up PiHole resources"""

@@ -1,7 +1,7 @@
 from .models import ButtonConfig
 from .controllers import ButtonManager
 from .display import DisplayBacklight, DisplayManager, TMuxController
-from .services import PiHole, SystemOs
+from .services import PiHole, SystemOps
 from .utils import (
     Config,
     ButtonFunction,
@@ -22,7 +22,7 @@ __all__ = [
     'DisplayManager',
     'TMuxController',
     'PiHole',
-    'SystemOs',
+    'SystemOps',
     'Config',
     'ButtonFunction',
     'CONFIRMATION_TIMEOUT',

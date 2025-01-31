@@ -1,6 +1,5 @@
 # vim:tabstop=4:softtabstop=4:shiftwidth=4:textwidth=79:expandtab:autoindent:smartindent:fileformat=unix:
 
-import time
 import signal
 import logging
 from src.utils.config import Config
@@ -27,13 +26,9 @@ def main():
             logger.error("Failed to find PADD display session")
             return
 
-        # Track cancellation state
-        cancellation_in_progress = False
-
         def button1_pressed():
             """Handle button 1 press - cycles LCD brightness"""
             if manager.pihole._waiting_for_confirmation or manager.system._waiting_for_confirmation:
-                # Cancel any pending confirmations
                 manager.cancel_confirmation()
                 return
             try:
@@ -45,51 +40,55 @@ def main():
 
         def button1_held(hold_time: float):
             """Handle button 1 hold - system control request: reboot|shutdown """
-            if manager.pihole._waiting_for_confirmation or manager.system._waiting_for_confirmation:
-                manager.cancel_confirmation()
-                return
             if not manager.system._waiting_for_confirmation and not manager.pihole._waiting_for_confirmation:
                 manager.system.handle_button1_held(hold_time)
 
         def button2_pressed():
-            """Handle button 2 press during confirmation"""
-            nonlocal cancellation_in_progress
-            logger.debug("Button 2 pressed - checking confirmation state")
-            if manager.pihole._waiting_for_confirmation or manager.system._waiting_for_confirmation:
-                logger.debug("In confirmation mode - cancelling")
-                cancellation_in_progress = True
-                manager.cancel_confirmation()
-                return
-            logger.debug("Not in confirmation mode - no action needed")
-        
+            """
+            Handle button 2 press
+            - In Pi-hole menu: Confirms gravity update
+            - In system menu: Confirms system update
+            """
+            if manager.pihole._waiting_for_confirmation:
+                logger.debug("In Pi-hole menu - confirming gravity update")
+                manager.pihole.handle_button2_press()
+            elif manager.system._waiting_for_confirmation:
+                logger.debug("In system menu - confirming system update")
+                manager.system.handle_button2_press()
+
         def button2_held(hold_time: float):
             """Handle button 2 hold - pihole update request"""
-            nonlocal cancellation_in_progress
             logger.debug(f"Button 2 held for {hold_time:.1f} seconds")
-            
-            if cancellation_in_progress:
-                logger.debug("Cancellation in progress - ignoring hold")
-                cancellation_in_progress = False  # Reset for next press
-                return
-            
             # Only proceed if not in any confirmation mode
             if not manager.system._waiting_for_confirmation and not manager.pihole._waiting_for_confirmation:
                 logger.debug("Starting update selection")
                 manager.pihole.handle_button2_held(hold_time)
 
         def button3_pressed():
-            """Handle button 3 press - first confirmation option"""
+            """
+            Handle button 3 press
+            - In Pi-hole menu: Confirms Pi-hole update
+            - In system menu: Confirms system restart
+            """
             if manager.system._waiting_for_confirmation:
-                manager.system.handle_button3_press()  # Confirm restart
+                logger.debug("In system menu - confirming restart")
+                manager.system.handle_button3_press()
             elif manager.pihole._waiting_for_confirmation:
-                manager.pihole.handle_button3_press()  # Confirm gravity update
+                logger.debug("In Pi-hole menu - confirming Pi-hole update")
+                manager.pihole.handle_button3_press()
 
         def button4_pressed():
-            """Handle button 4 press - second confirmation option"""
+            """
+            Handle button 4 press
+            - In Pi-hole menu: Confirms PADD update
+            - In system menu: Confirms system shutdown
+            """
             if manager.system._waiting_for_confirmation:
-                manager.system.handle_button4_press()  # Confirm shutdown
+                logger.debug("In system menu - confirming shutdown")
+                manager.system.handle_button4_press()
             elif manager.pihole._waiting_for_confirmation:
-                manager.pihole.handle_button4_press()  # Confirm pihole update
+                logger.debug("In Pi-hole menu - confirming PADD update")
+                manager.pihole.handle_button4_press()
 
         # Get button configurations from config
         button_configs = config.buttons

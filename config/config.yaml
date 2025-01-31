@@ -1,22 +1,28 @@
+# Display settings
 display:
   backlight:
     pin: 18
     pwm_frequency: 240
-    gamma: 1.9
+    gamma: 1.8
     retry_attempts: 3
     brightness_levels: [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]
+  tmux:
+    session_name: 'display'
+    padd_window: 'padd'
+    control_window: 'control'
 
+# Button configurations
 buttons:
   '1':
     pin: 17
     function: "brightness_system"
-    hold_time: 5.0  # System control activation
+    hold_time: 1.0  # Hold this long to activate System Update and Control menu
     pull_up: true
     bounce_time: 0.05
   '2':
     pin: 22
     function: "update_select"
-    hold_time: 1.0  # Update selection activation
+    hold_time: 1.0  # Hold this long to active PiHole Update Menu
     pull_up: true
     bounce_time: 0.05
   '3':
@@ -32,14 +38,35 @@ buttons:
     pull_up: true
     bounce_time: 0.05
 
-timing:
-  confirmation_timeout: 30
-  feedback_delay: 3
+# Button function definitions
+button_functions:
+  brightness_system: "brightness_system"
+  update_select: "update_select"
+  confirm_1: "confirm_1"
+  confirm_2: "confirm_2"
 
+# Application paths
+paths:
+  # Base directories
+  root_dir: "/home/pi/pihole_display"
+  config_dir: "/home/pi/pihole_display/config"
+  log_dir: "/home/pi/pihole_display/log"
+  # PADD related paths
+  padd_dir: "/home/pi/PADD"
+  padd_script: "/home/pi/PADD/padd.sh"
+  # System paths
+  python_path: "/usr/bin/python3"
+  main_script: "/home/pi/pihole_display/main.py"
+
+# Timing settings
+timing:
+  confirmation_timeout: 30  # seconds to wait for confirmation
+  feedback_delay: 3        # seconds to show feedback messages
+
+# Logging configuration
 logging:
   file: "pihole_display.log"
   level: "INFO"
-#  level: "DEBUG"
-  max_bytes: 1048576
+  max_bytes: 1048576  # 1MB
   backup_count: 5
 
