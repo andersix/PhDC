@@ -64,18 +64,18 @@ class SystemOps:
             if returncode == 0:
                 logger.info(f"{operation} completed successfully")
                 if finish:
-                    print(f"\n{operation} completed successfully")
+                    print(f"\n    {operation} completed successfully")
             else:
                 logger.error(f"{operation} failed")
                 if finish:
-                    print(f"\n{operation} failed")
+                    print(f"\n    {operation} failed")
 
             return returncode, output
 
         except subprocess.SubprocessError as e:
             error_msg = f"Failed to {operation}: {str(e)}"
             logger.error(error_msg)
-            print(f"\nError: {error_msg}")  # Always show error
+            print(f"\n    Error: {error_msg}")  # Always show error
             raise ServiceError(error_msg)
         finally:
             if finish:
@@ -116,37 +116,45 @@ class SystemOps:
     def update_system(self) -> None:
         """Execute system update"""
         try:
-            print("\nUpdating package lists...")
+            print("\n    Updating package lists...")
             returncode, output = self._run_process_command(
-                ['sudo', 'apt-get', 'update'],
+                ['sudo', 'apt', 'update'],
                 'package list update',
                 finish=False
             )
 
             if returncode != 0:
                 logger.error("Package list update failed")
-                print("\nPackage list update failed")
+                print("\n    Package list update failed")
                 time.sleep(FEEDBACK_DELAY)
                 self.display.switch_to_padd()
                 return
 
             # Check if all packages are up to date
-            if "All packages are up to date." in output:
+            if "All packages are up to date" in output:
                 logger.info("System is already up to date")
-                print("\nSystem is already up to date")
+                print("\n    System is already up to date")
                 time.sleep(FEEDBACK_DELAY)
                 self.display.switch_to_padd()
                 return
 
-            print("\nUpgrading packages...")
+            print("\n    Upgrading packages...")
             self._run_process_command(
-                ['sudo', 'apt-get', '-y', 'full-upgrade'],
+                ['sudo', 'apt', '-y', 'full-upgrade'],
+                'system upgrade',
+                finish=False
+            )
+
+            print("\n    Autoremoving unused packages...")
+            self._run_process_command(
+                ['sudo', 'apt', '-y', 'autoremove'],
                 'system upgrade',
                 finish=True
             )
+
         except Exception as e:
             logger.error(f"Failed to update system: {str(e)}")
-            print(f"\nError: Failed to update system: {str(e)}")
+            print(f"\n    Error: Failed to update system: {str(e)}")
             time.sleep(FEEDBACK_DELAY)
             self.display.switch_to_padd()
 
@@ -154,7 +162,7 @@ class SystemOps:
         """Handle system reboot"""
         logger.info("Initiating system reboot")
         try:
-            print("\nRebooting system...")
+            print("\n    Rebooting system...")
             time.sleep(FEEDBACK_DELAY)
             subprocess.run(['sudo', 'reboot'], check=True)
         except subprocess.SubprocessError as e:
@@ -165,7 +173,7 @@ class SystemOps:
         """Handle system shutdown"""
         logger.info("Initiating system shutdown")
         try:
-            print("\nShutting down system...")
+            print("\n    Shutting down system...")
             time.sleep(FEEDBACK_DELAY)
             subprocess.run(['sudo', 'shutdown', '-h', 'now'], check=True)
         except subprocess.SubprocessError as e:
