@@ -14,42 +14,109 @@ restarting or shuting down the Pi for maintenance, etc.
 
 <img src="doc/img/PiHole_TFT_buttons.jpg" style=" width:480px; " >
 
-## Use
+## How to Use the Buttons
 
-The code in pitft_buttons.py determines what each button's function is.
+The PiTFT 2.8" display has four buttons on the side. The application uses a **menu-based system** where buttons have different functions depending on the current mode:
 
-The PiTFT 2.8" display has four buttons on GPIO 17, 22, 23, and 27.
-In the python code, they are button0, button1, button2, and button3 respectively.
-  
-#### Button Functions (From top to bottom)
+- **Normal mode**: Displays PADD (Pi-hole statistics)
+- **Pi-Hole Update Menu**: Triggered by holding Button 1
+- **System Control Menu**: Triggered by holding Button 2
 
-* Button 0, top-most button (GPIO 17):
-  - Dim display backlight by 1/8th of full brightness for each press until display reaches "off" state.
-    - When in the "off" state, the next button press turns display backlight back to full brightness.
-      The PiTFT backlight LEDs are connected to GPIO 18. Brightness is set by PWM to this GPIO. The PWM is gamma-corrected so the 1/8th steps "look good".
+### Button Layout (Top to Bottom)
 
-* Button 1 (GPIO 22):
-  - Run the Pi-Hole system updater
-    - Press and hold button for one second when you see the display showing "Updates are available".
-      The update function checks to see if an update is needed, and does nothing
-      if the PiHole is already up-to-date.
-      Release button when the display begins flashing, indicating the the updater is checking and/or running.
-      Results are logged in syslog, so use journalctl, and/or check /var/log/messages, for results.
+```
+┌─────────────┐
+│  Button 1   │ ← Top button
+├─────────────┤
+│  Button 2   │
+├─────────────┤
+│  Button 3   │
+├─────────────┤
+│  Button 4   │ ← Bottom button
+└─────────────┘
+```
 
-* Button 2 (GPIO 23):
-  - Run the Pi-Hole gravity database updater
-    - Press and hold button for one second when you have added or changed Ad-lists and need to update Pi-Hole DBs.
-      Release the button when the display begins flashing, indicating the gravity updater is running.
-      Results are logged in syslog, so use journalctl, and/or check /var/log/messages, for results.
+---
 
-* Button 3 (GPIO 27):
-  - Restart or Shutdown
-    - To Restart Pi, press and hold for more than 2 seconds, but less than 5 seconds.
-    - To Shutdown Pi, press and hold for more than 5 seconds.
-    - NOTE: The display will "blink" to indicate what will happen when you release button.
-            When you see:
-      * one blink, releasing button will restart Pi
-      * a second blink, releasing button will shutdown Pi
+## Normal Mode (PADD Display)
+
+When the display shows PADD (Pi-hole statistics):
+
+**Button 1** - Brightness & Menu
+- **Press**: Dim the display (cycles through brightness levels, including off)
+- **Hold 2 seconds**: Open the **Pi-Hole Update Menu**
+
+**Button 2** - System Menu
+- **Hold 2 seconds**: Open the **System Control Menu**
+
+**Buttons 3 & 4**
+- Not used in normal mode (used for menu selections)
+
+---
+
+## Pi-Hole Update Menu
+
+**How to access**: Hold Button 1 for 2 seconds
+
+The display shows your options:
+
+```
++---------------------------------+
+|       Pi-Hole Update Menu       |
++---------------------------------+
+
+Button 2: Update Gravity
+Button 3: Update Pi-hole
+Button 4: Update PADD
+
+Waiting 30s for selection
+Any other button cancels
+```
+
+**What each button does:**
+- **Button 1**: Cancel and return to PADD
+- **Button 2**: Update gravity (ad blocklists)
+- **Button 3**: Update Pi-hole core software
+- **Button 4**: Update PADD dashboard
+
+The menu times out after 30 seconds.
+
+---
+
+## System Control Menu
+
+**How to access**: Hold Button 2 for 2 seconds
+
+The display shows your options:
+
+```
++--------------------------------+
+|      System Control Menu       |
++--------------------------------+
+
+Button 2: Update System
+Button 3: Restart System
+Button 4: Shutdown System
+
+Waiting 30s for selection...
+Any other button cancels
+```
+
+**What each button does:**
+- **Button 1**: Cancel and return to PADD
+- **Button 2**: Update Raspberry Pi OS and packages
+- **Button 3**: Reboot the system
+- **Button 4**: Shutdown the system
+
+The menu times out after 30 seconds.
+
+---
+
+## Tips
+
+- When you enter a menu, the display automatically switches to full brightness
+- All operations show their progress on the display
+- Check the logs at `~/pihole_display/log/pihole_display.log` for details
 
 
 ## Requirements
