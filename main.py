@@ -33,12 +33,6 @@ def main():
                 logger.debug("Selected Pi-Hole Menu")
                 manager.pihole.show_menu(hold_time)
 
-        def button2_held(hold_time: float):
-            """button 2 hold - system control menu"""
-            if not manager.system._waiting_for_confirmation and not manager.pihole._waiting_for_confirmation:
-                logger.debug("Selected System Menu")
-                manager.system.show_menu(hold_time)
-
         def button1_pressed():
             """button 1 press - cycle brightness"""
             if manager.pihole._waiting_for_confirmation or manager.system._waiting_for_confirmation:
@@ -52,6 +46,13 @@ def main():
             except Exception as e:
                 logger.error(f"Error handling button 1 press: {str(e)}")
 
+
+        def button2_held(hold_time: float):
+            """button 2 hold - system control menu"""
+            if not manager.system._waiting_for_confirmation and not manager.pihole._waiting_for_confirmation:
+                logger.debug("Selected System Menu")
+                manager.system.show_menu(hold_time)
+
         def button2_pressed():
             """Handle button 2 press - cancelling if in confirmation"""
             if manager.system._waiting_for_confirmation:
@@ -60,6 +61,7 @@ def main():
             elif manager.pihole._waiting_for_confirmation:
                 logger.debug("In Pi-hole menu - confirming Gravity update")
                 manager.pihole.request_gravity_update()
+
 
         def button3_pressed():
             """
@@ -74,6 +76,7 @@ def main():
                 logger.debug("In Pi-hole menu - confirming Pi-hole update")
                 manager.pihole.request_pihole_update()
 
+
         def button4_pressed():
             """
             Handle button 4 press
@@ -86,6 +89,7 @@ def main():
             elif manager.pihole._waiting_for_confirmation:
                 logger.debug("In Pi-hole menu - confirming PADD update")
                 manager.pihole.request_padd_update()
+
 
         # Get button configurations from config
         button_configs = config.buttons

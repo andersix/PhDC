@@ -59,6 +59,9 @@ class DisplayBacklight:
         gamma_corrected = pow(value, self.gamma)
         return min(255, max(0, int(gamma_corrected * 255)))
 
+    #
+    # TODO : look into using pi.hardware_PWM instead of set pwm dutycycle
+    #
     def set_brightness(self, raw_value: float) -> None:
         """Set brightness with gamma correction and value conversion"""
         if not self.pi or not self.pi.connected:

@@ -1,10 +1,16 @@
-# Startup code
+# Startup Script
 
-  - Add the following to the beginning of your .bashrc file
-  - This will run the start_display.sh script at login
-  - Make sure your PiHole with LCD display is set to login automaticaly
+## start_display.sh
 
-```
+This script automatically creates and manages the tmux session for the Pi-hole display controller.
+
+### Usage
+
+Add the following code to the **very top** of your `~/.bashrc` file:
+
+**Important:** Your Raspberry Pi must be configured for auto-login (console autologin) for this to work.
+
+```bash
 # Run PiHole display controller
 if [ "$TERM" == "linux" ] ; then
   if [ -f /home/pi/pihole_display/scripts/start_display.sh ]; then
@@ -14,3 +20,13 @@ if [ "$TERM" == "linux" ] ; then
 fi
 ```
 
+### What it does
+
+The `start_display.sh` script:
+- Creates a tmux session named "display" with two windows
+- Launches PADD (Pi-hole Admin Display Dashboard) in the first window
+- Starts the Python button controller in the second window
+- Switches to the PADD window for display
+- Logs all startup activities to `../log/startup.log`
+
+See the main [README.md](../README.md) for complete installation instructions.

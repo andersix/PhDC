@@ -1,7 +1,7 @@
 # Pi-hole Display
 
 ## Introduction
-The Pi-hole Display Controller is a Python application designed to run on a Raspberry Pi with an attached LCD display. It provides a user interface for monitoring Pi-hole statistics and performing system maintenance tasks through physical button controls. The application works in conjunction with the Pi-hole Admin Display Dashboard (PADD) to provide both visual feedback and control capabilities.
+The Pi-hole Display Controller is a Python application designed to run on a Raspberry Pi with an attached LCD display. It provides a user interface for monitoring Pi-hole statistics and performing system maintenance tasks through physical button controls. The application works in conjunction with the Pi-hole Admin Display Dashboard (PADD, included as a git submodule) to provide both visual feedback and control capabilities.
 
 
 This is a python module and companion systemd service file,
@@ -84,14 +84,16 @@ In the python code, they are button0, button1, button2, and button3 respectively
   - https://learn.adafruit.com/adafruit-pitft-28-inch-resistive-touchscreen-display-raspberry-pi
 
 * Pi-Hole (optional, but this is what I'm using it for)
-  - padd.sh for status display
 
-* python3-gpiozero package
-  - Tested on Version: 1.5.1, or later
-  - Homepage: http://gpiozero.readthedocs.io/
+* PADD (Pi-hole Admin Display Dashboard)
+  - **Included as a git submodule** - automatically cloned when using `--recurse-submodules`
+  - https://github.com/pi-hole/PADD
 
-* pitft_buttons
-  - this repository!
+* Python packages (see requirements.txt):
+  - gpiozero (tested on Version 1.5.1 or later)
+  - PyYAML
+  - pigpio
+  - setuptools
 
 ## Installation
 
@@ -120,12 +122,6 @@ If you don't have git, install it with
 sudo apt install git
 ```
 
-#### GitPython
-If you don't have git python, install it with
-```
-sudo pip3 install GitPython
-```
-
 #### gpiozero
 If you don't have gpiozero, install it with
 ```
@@ -135,11 +131,20 @@ or
 ```
 sudo pip3 install gpiozero
 ```
-#### Get pitft buttons (this repository)
+#### Get pihole_display (this repository)
+**Important:** Use `--recurse-submodules` to automatically clone the PADD submodule:
 ```
 cd ~
-git clone https://github.com/andersix/pitft_buttons.git
+git clone --recurse-submodules https://github.com/andersix/pihole_display.git
 ```
+
+If you already cloned without submodules, initialize them:
+```
+cd ~/pihole_display
+git submodule update --init --recursive
+```
+
+**Note:** PADD is now included as a git submodule and configured by default in `config/config.yaml`. If you prefer to use a different PADD installation location, you can edit the `paths.padd_dir` and `paths.padd_script` settings in the config file.
 
 #### pigpio
 If you don't have pigpio, install it with
@@ -149,9 +154,6 @@ sudo apt install pigpio
 * enter ```sudo raspi-config``` on the command line, and enable Remote GPIO.
   - select "3 Interface Options", then "P8 Remote GPIO", then "Yes" to enable.
   - select OK then Finish to exit raspi-config
-* link the pigiod.service file to the systemd directory
-  - ```cd ~/pitft_buttons```
-  - ```sudo ln -s /home/pi/pitft_buttons/pigpiod.service /etc/systemd/system/```
 * enable and start the gpio service
   - ```sudo systemctl enable pigpiod```
   - ```sudo systemctl start pigpiod```
@@ -176,6 +178,18 @@ sudo python3 adafruit-pitft.py --display=28c --rotation=90 --install-type=consol
   
 #### Reboot and return to here
 Once the PiTFT script is installed, reboot your Pi, and return to the next step below.
+
+#### Enable Auto-Login (Required)
+The display controller requires auto-login to start automatically on boot.
+
+Configure auto-login using raspi-config:
+```bash
+sudo raspi-config
+```
+- Select "1 System Options"
+- Select "S5 Boot / Auto Login"
+- Select "B2 Console Autologin" (Text console, automatically logged in as 'pi' user)
+- Select Finish and reboot if prompted
 
 #### Change the console font
 * Edit the /boot/cmdline.txt file and to the end of the line, after "rootwait", add:
@@ -204,25 +218,38 @@ and go select the following options to get Terminus 6x12
 * Font size:
   - 6x12 (framebuffer only)
 
-#### Install padd.sh
-I'm using this for PiHole status display, so let's use padd.sh
-```
-cd ~
-git clone https://github.com/pi-hole/PADD.git
-```
-Then have padd.sh launch at boot time:
+#### Configure Display Controller to Start at Boot
 
-Edit the pi users ~/.bashrc and at the bottom put:
-```
-# Run PADD
-# If we're on the PiTFT screen (ssh is xterm)
+**Important:** This assumes your Raspberry Pi is configured for auto-login on boot.
+
+Edit the pi user's `~/.bashrc` and add the following code **at the very top** of the file:
+
+```bash
+# Run PiHole display controller
 if [ "$TERM" == "linux" ] ; then
-  while :
-  do
-    ./PADD/padd.sh
-    sleep 1
-  done
+  if [ -f /home/pi/pihole_display/scripts/start_display.sh ]; then
+      /home/pi/pihole_display/scripts/start_display.sh
+      return 0
+  fi
 fi
+```
+
+This startup script (`scripts/start_display.sh`) automatically:
+- Creates a tmux session with two windows
+- Starts PADD in the first window to display Pi-hole statistics
+- Starts the button controller (`main.py`) in the second window
+- Switches to the PADD window for display
+- Logs startup details to `log/startup.log`
+
+**Note:** If you want to customize the PADD location, edit `config/config.yaml` and update the `paths.padd_dir` and `paths.padd_script` settings.
+## add user to pihole group
+The new pihole requires authentication. I opted to add the pihole display user, "pi" in my case, to the pihole group.
+See `https://github.com/pi-hole/PADD?tab=readme-ov-file#authentication` for details and other options.
+```
+# Add the pihole user to the pihole group:
+$ whoami
+pi
+$ sudo usermod -G pihole pi
 ```
 
 #### Reboot and return to here
@@ -230,70 +257,122 @@ After this reboot, the dipslay should show the PADD status screen for your PiHol
 
 Now let's get the buttons code working:
 
-#### Link pitft buttons script and systemd service
+#### Install Python dependencies
+```bash
+cd ~/pihole_display
+sudo pip3 install -r requirements.txt
 ```
-cd ~/pitft_buttons
-chmod +x pitft_buttons.py
-sudo ln -s ~/pitft_buttons/pitft_buttons.py /usr/local/bin/.
-sudo ln -s ~/pitft_buttons/pitft_buttons.service /etc/systemd/system/.
-sudo systemctl enable pitft_buttons.service
-sudo systemctl start pitft_buttons.service
+
+#### Verify pigpiod is running
+The pigpio daemon should already be running from the earlier setup step. Verify it:
+```bash
+sudo systemctl status pigpiod
 ```
-That's it. The buttons should be working as described above. If you have issues, see the Troubleshooting section.
+
+If not running, start it:
+```bash
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+
+#### Reboot to start the display controller
+After adding the startup code to `.bashrc`, reboot your Pi:
+```bash
+sudo reboot
+```
+
+The display controller should automatically start on boot, create the tmux session, launch PADD, and activate button control.
+
+That's it! The buttons should be working as described above. If you have issues, see the Troubleshooting section.
 
 ## Troubleshooting
 
-* Check the status of the GPIOD service with the command:
-  ```
-  $ sudo systemctl status pigpiod.service
-  ```
-  - This should produce output similar to:
-    ```
-    ● pigpiod.service - Pigpio daemon
-       Loaded: loaded (/home/pi/pitft_buttons/pigpiod.service; enabled; vendor preset: enabled)
-       Active: active (running) since Fri 2022-05-13 16:18:03 MDT; 15h ago
-      Process: 497 ExecStart=/usr/bin/pigpiod -m -n localhost (code=exited, status=0/SUCCESS)
-     Main PID: 512 (pigpiod)
-        Tasks: 5 (limit: 1716)
-       CGroup: /system.slice/pigpiod.service
-               └─512 /usr/bin/pigpiod -m -n localhost
-    ```
+### Check if the tmux session is running
+```bash
+tmux list-sessions
+```
+You should see a session named "display". If not, the startup script may have failed.
 
-* Check the status of the PITFT program at any time with the command:
-  ```
-  sudo systemctl status pitft_buttons.service
-  ```
-  - This should produce output similar to:
-    ```
-    ● pitft_buttons.service - PiTFT GPIO buttons
-       Loaded: loaded (/home/pi/PiTFT28_buttons/pitft_buttons.service; enabled; vendor preset: enabled)
-       Active: active (running) since Wed 2020-12-02 21:33:39 MST; 21h ago
-     Main PID: 609 (python3)
-        Tasks: 5 (limit: 1601)
-       CGroup: /system.slice/pitft_buttons.service
-               └─609 /usr/bin/python3 /usr/local/bin/pitft_buttons.py
-    ```
-You should have "Active: active (running)".
-If not check
- * for syntax errors in python code, if you modified it.
- * python file location
- * python and/or service file permissions
- * check journald logs using ```journalctl``` for an errors involving this script
+### Check startup logs
+```bash
+cat ~/pihole_display/log/startup.log
+```
+This shows detailed information about the tmux session creation and startup process.
+
+### Check application logs
+```bash
+tail -f ~/pihole_display/log/pihole_display.log
+```
+This shows runtime logs from the Python application, including button presses and any errors.
+
+### Verify pigpiod is running
+```bash
+sudo systemctl status pigpiod.service
+```
+You should see "Active: active (running)". If not:
+```bash
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+
+### Check if Python process is running
+```bash
+pgrep -f "main.py"
+```
+Should return a process ID. If not, the controller isn't running.
+
+### Attach to the tmux session to see what's happening
+```bash
+tmux attach -t display
+```
+- Press `Ctrl+b` then `w` to see and select between windows
+- Press `Ctrl+b` then `d` to detach without stopping the session
+
+### Common Issues
+
+**Buttons not responding:**
+- Verify Python process is running: `pgrep -f main.py`
+- Check that pigpiod is running
+- Review application logs for GPIO errors
+- Check for syntax errors if you modified the code
+
+**Display not showing PADD:**
+- Verify tmux session exists: `tmux ls`
+- Check PADD submodule is initialized: `ls ~/pihole_display/PADD/padd.sh`
+- Review startup logs: `cat ~/pihole_display/log/startup.log`
+
+**Application won't start on boot:**
+- Verify auto-login is enabled: `sudo raspi-config`
+- Check .bashrc has startup code at the top
+- Verify file paths in the .bashrc code match your installation
 
 ## Updates
-* **2022-5-09**
-  Now using the pigpio factory. Why? I was annoyed that the PWMLED would _flash_, or _glitch_ the display backlight randomly when dimmed. By changing to the pigpio factory, this annoying glitch goes away (if you can think of a better way, let me know, but this works.)
-  - To get this update, you will need to install and start the pigpio service as described above in the Software, [pigpio section](#pigpio)
-  - Script now uses [Git Python](#GitPython) to pull updates for PADD, so install that if you don't already have it. Also make sure your PADD is a clone from the pi-hole repo, see [PADD section](#install-paddsh).
-  - also updated buttons 1 and 2 to press-and-hold for 1 second
 
-* When there are updates to this project, and you want them, just pull them.
-  ```
-  cd ~/pitft_buttons
-  git pull
-  sudo systemctl stop pitft_buttons.service
-  sudo systemctl start pitft_buttons.service
-  ```
+### Updating the Application
+
+When there are updates to this project:
+```bash
+cd ~/pihole_display
+git pull
+git submodule update --remote --merge  # Update PADD submodule
+
+# Restart the application by killing the tmux session
+tmux kill-session -t display
+# Then manually run the startup script or reboot
+/home/pi/pihole_display/scripts/start_display.sh
+```
+
+### Update History
+
+* **2025-11-02**
+  - PADD is now included as a git submodule
+  - Configuration centralized in `config/config.yaml`
+  - Modular architecture with separate controllers for display, buttons, PiHole, and system operations
+  - Menu system with confirmation timeout for safer operation
+
+* **2022-5-09**
+  - Now using the pigpio factory for PWM control to eliminate backlight flicker when dimmed
+  - Updated buttons to use press-and-hold (2 second) pattern for menu activation
 
 ## Modifications and Improvements
 

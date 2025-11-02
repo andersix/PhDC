@@ -16,13 +16,13 @@ buttons:
   '1':
     pin: 17
     function: "brightness_system"
-    hold_time: 1.0  # Hold this long to activate Pi-hole menu
+    hold_time: 2.0  # Hold this long to activate Pi-hole menu
     pull_up: true
     bounce_time: 0.05
   '2':
     pin: 22
     function: "update_select"
-    hold_time: 1.0  # Hold this long to active System Update Menu
+    hold_time: 2.0  # Hold this long to active System Update Menu
     pull_up: true
     bounce_time: 0.05
   '3':
@@ -51,9 +51,9 @@ paths:
   root_dir: "/home/pi/pihole_display"
   config_dir: "/home/pi/pihole_display/config"
   log_dir: "/home/pi/pihole_display/log"
-  # PADD related paths
-  padd_dir: "/home/pi/PADD"
-  padd_script: "/home/pi/PADD/padd.sh"
+  # PADD related paths (using submodule by default)
+  padd_dir: "/home/pi/pihole_display/PADD"
+  padd_script: "/home/pi/pihole_display/PADD/padd.sh"
   # System paths
   python_path: "/usr/bin/python3"
   main_script: "/home/pi/pihole_display/main.py"
