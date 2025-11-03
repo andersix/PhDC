@@ -52,7 +52,7 @@ When the display shows PADD (Pi-hole statistics):
 
 ## Pi-Hole Update Menu
 
-**How to access**: Hold Button 1 for 2 seconds
+**How to access**: Hold Button 1 for two seconds
 
 The display shows your options:
 
@@ -89,7 +89,7 @@ All updates display progress in real-time and show error messages if something f
 
 ## System Control Menu
 
-**How to access**: Hold Button 2 for 2 seconds
+**How to access**: Hold Button 2 for two seconds
 
 The display shows your options:
 
@@ -152,7 +152,7 @@ The menu times out after 30 seconds.
 ### Software
 
 * Raspberry Pi OS Lite
-  - Tested on: "Raspbian GNU/Linux 10 (buster)"
+  - Tested on: "Raspberry Pi OS 12 (bookworm)"
   - https://www.raspberrypi.org/software/operating-systems/
 
 * Python 3
