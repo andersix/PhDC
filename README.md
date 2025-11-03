@@ -159,6 +159,8 @@ The menu times out after 30 seconds.
 
 * git
 
+* tmux (required for managing display windows)
+
 * Adafruit Raspberry Pi Installer scripts
   - https://learn.adafruit.com/adafruit-pitft-28-inch-resistive-touchscreen-display-raspberry-pi
 
@@ -195,21 +197,12 @@ If you don't have pip3, install it with
 sudo apt install python3-pip
 ```
 
-#### Git
-If you don't have git, install it with
+#### Git and tmux
+Install git and tmux:
 ```
-sudo apt install git
+sudo apt install git tmux
 ```
 
-#### gpiozero
-If you don't have gpiozero, install it with
-```
-sudo apt install python3-gpiozero
-```
-or
-```
-sudo pip3 install gpiozero
-```
 #### Get pihole_display (this repository)
 **Important:** Use `--recurse-submodules` to automatically clone the PADD submodule:
 ```
@@ -242,7 +235,6 @@ sudo apt install pigpio
 ```
 cd ~
 sudo pip3 install --upgrade adafruit-python-shell click==7.0
-sudo apt-get install -y git
 git clone https://github.com/adafruit/Raspberry-Pi-Installer-Scripts.git
 cd Raspberry-Pi-Installer-Scripts
 ```
