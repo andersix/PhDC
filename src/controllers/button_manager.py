@@ -60,11 +60,15 @@ class ButtonManager:
             logger.error(error_msg)
             raise ButtonError(error_msg)
 
+    def is_menu_active(self) -> bool:
+        """Check if any menu is currently active"""
+        return self.pihole.is_waiting_for_confirmation() or self.system.is_waiting_for_confirmation()
+
     def cancel_confirmation(self) -> None:
         """Cancel any pending confirmation in either pihole or system mode"""
-        if self.pihole._waiting_for_confirmation:
+        if self.pihole.is_waiting_for_confirmation():
             self.pihole.cancel_update()
-        elif self.system._waiting_for_confirmation:
+        elif self.system.is_waiting_for_confirmation():
             self.system.cancel_confirmation()
 
     def cleanup(self) -> None:

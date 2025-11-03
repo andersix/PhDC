@@ -200,6 +200,10 @@ class SystemOps:
             self._confirmation_timer = None
         self._waiting_for_confirmation = False
 
+    def is_waiting_for_confirmation(self) -> bool:
+        """Check if waiting for user confirmation"""
+        return self._waiting_for_confirmation
+
     def cancel_confirmation(self) -> None:
         """Cancel pending system control confirmation"""
         if self._waiting_for_confirmation:

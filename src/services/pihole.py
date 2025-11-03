@@ -55,6 +55,10 @@ class PiHole:
         self._waiting_for_confirmation = False
         logger.debug("Cleared confirmation state")
 
+    def is_waiting_for_confirmation(self) -> bool:
+        """Check if waiting for user confirmation"""
+        return self._waiting_for_confirmation
+
     def cancel_update(self) -> None:
         """Cancel any pending update confirmation"""
         if self._waiting_for_confirmation:
