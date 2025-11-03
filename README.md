@@ -74,12 +74,20 @@ Any other button cancels
 ```
 
 **What each button does:**
-- **Button 1**: Cancel and return to PADD
-- **Button 2**: Update gravity (ad blocklists)
-- **Button 3**: Update Pi-hole core software
-- **Button 4**: Update PADD dashboard
 
-The menu times out after 30 seconds.
+- **Button 1: Cancel**
+  - Returns to PADD display
+
+- **Button 2: Update Gravity**
+  - Updates Pi-hole's blocklists. Use this after adding new blocklists or to refresh ad-blocking lists. Shows download progress and takes 1-3 minutes.
+
+- **Button 3: Update Pi-hole**
+  - Updates Pi-hole core software to the latest version. Use when an update is available. Shows update progress and takes 2-5 minutes. May require a reboot afterward.
+
+- **Button 4: Update PADD**
+  - Updates the PADD dashboard display from GitHub. Shows what changed. Takes less than 1 minute.
+
+All updates display progress in real-time and show error messages if something fails. The menu times out after 30 seconds.
 
 ---
 
@@ -103,10 +111,18 @@ Any other button cancels
 ```
 
 **What each button does:**
-- **Button 1**: Cancel and return to PADD
-- **Button 2**: Update Raspberry Pi OS and packages
-- **Button 3**: Reboot the system
-- **Button 4**: Shutdown the system
+
+- **Button 1: Cancel**
+  - Returns to PADD display
+
+- **Button 2: Update System**
+  - Updates Raspberry Pi OS and all installed packages. Runs `apt update`, `apt full-upgrade`, and `apt autoremove`. Shows update progress and may take 5-15 minutes depending on available updates.
+
+- **Button 3: Restart System**
+  - Reboots the Raspberry Pi. The display will go dark and restart within 1-2 minutes.
+
+- **Button 4: Shutdown System**
+  - Safely shuts down the Raspberry Pi. Unplug power only after the display goes dark and activity LED stops blinking.
 
 The menu times out after 30 seconds.
 

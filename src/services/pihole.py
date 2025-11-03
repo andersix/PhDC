@@ -155,67 +155,173 @@ class PiHole:
                 self.display.switch_to_padd()
 
     def update_gravity(self) -> None:
-        """Execute gravity update"""
-        self._run_process_command(
-            command=['sudo', 'pihole', '-g'],
-            operation='gravity update'
-        )
+        """Execute gravity update (update Pi-hole's blocklists)"""
+        logger.info("Starting gravity update")
+
+        try:
+            print("\n    Updating gravity (blocklists)...")
+
+            # Run pihole gravity update
+            process = subprocess.Popen(
+                ['sudo', 'pihole', '-g'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
+
+            # Stream output to display in real-time
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if line:
+                    print(f"    {line.rstrip()}")
+
+            # Get any remaining output
+            remaining_stdout, stderr = process.communicate()
+            if remaining_stdout:
+                for line in remaining_stdout.splitlines():
+                    print(f"    {line}")
+
+            returncode = process.returncode
+
+            # Provide feedback based on result
+            if returncode == 0:
+                logger.info("Gravity update completed successfully")
+                print("\n    Gravity update completed successfully")
+            else:
+                logger.error(f"Gravity update failed with return code {returncode}")
+                print("\n    Gravity update failed")
+                # Display stderr if present
+                if stderr:
+                    for line in stderr.splitlines():
+                        logger.error(f"Gravity update error: {line}")
+                        print(f"    {line}")
+
+        except Exception as e:
+            logger.error(f"Failed to update gravity: {str(e)}")
+            print(f"\n    Error: Failed to update gravity: {str(e)}")
+        finally:
+            time.sleep(FEEDBACK_DELAY)
+            self.display.switch_to_padd()
 
     def update_pihole(self) -> None:
-        """Execute Pi-hole update"""
-        self._run_process_command(
-            command=['sudo', 'pihole', '-up'],
-            operation='Pi-hole update'
-        )
+        """Execute Pi-hole core software update"""
+        logger.info("Starting Pi-hole update")
+
+        try:
+            print("\n    Updating Pi-hole core software...")
+
+            # Run pihole update
+            process = subprocess.Popen(
+                ['sudo', 'pihole', '-up'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
+
+            # Stream output to display in real-time
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if line:
+                    print(f"    {line.rstrip()}")
+
+            # Get any remaining output
+            remaining_stdout, stderr = process.communicate()
+            if remaining_stdout:
+                for line in remaining_stdout.splitlines():
+                    print(f"    {line}")
+
+            returncode = process.returncode
+
+            # Provide feedback based on result
+            if returncode == 0:
+                logger.info("Pi-hole update completed successfully")
+                print("\n    Pi-hole update completed successfully")
+            else:
+                logger.error(f"Pi-hole update failed with return code {returncode}")
+                print("\n    Pi-hole update failed")
+                # Display stderr if present
+                if stderr:
+                    for line in stderr.splitlines():
+                        logger.error(f"Pi-hole update error: {line}")
+                        print(f"    {line}")
+
+        except Exception as e:
+            logger.error(f"Failed to update Pi-hole: {str(e)}")
+            print(f"\n    Error: Failed to update Pi-hole: {str(e)}")
+        finally:
+            time.sleep(FEEDBACK_DELAY)
+            self.display.switch_to_padd()
 
     def update_padd(self) -> None:
-        """Check and update PADD if needed"""
-        logger.info("Starting PADD update check")
+        """
+        Update PADD from git repository
+
+        Note: PADD is a git submodule. This performs a git pull within the
+        submodule directory to get the latest code. This is appropriate for
+        end-user installations.
+        """
+        logger.info("Starting PADD update")
         padd_dir = Path(PATHS['padd_dir'])
 
         try:
-            print("\n    Checking PADD for updates...")
+            print("\n    Updating PADD...")
 
-            # Fetch updates without finishing
-            fetch_result = self._run_process_command(
-                command=['git', 'fetch'],
-                operation='git fetch',
+            # Run git pull and capture output
+            process = subprocess.Popen(
+                ['git', 'pull'],
                 cwd=str(padd_dir),
-                finish=False
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
             )
 
-            if fetch_result != 0:
-                logger.error("Failed to fetch PADD updates")
-                print("\n    Failed to fetch PADD updates")
-                return
+            # Stream output to display
+            output_lines = []
+            while process.poll() is None:
+                line = process.stdout.readline()
+                if line:
+                    output_lines.append(line.rstrip())
+                    print(f"    {line.rstrip()}")
 
-            # Check status without finishing
-            status_result = self._run_process_command(
-                command=['git', 'status', '-uno'],
-                operation='check PADD status',
-                cwd=str(padd_dir),
-                finish=False
-            )
+            # Get any remaining output
+            remaining_stdout, stderr = process.communicate()
+            if remaining_stdout:
+                for line in remaining_stdout.splitlines():
+                    output_lines.append(line)
+                    print(f"    {line}")
 
-            if "Your branch is behind" in str(status_result):
-                print("\n    Updates available. Updating PADD...")
+            returncode = process.returncode
+            output_text = '\n'.join(output_lines)
 
-                # Pull changes and finish
-                self._run_process_command(
-                    command=['git', 'pull'],
-                    operation='update PADD',
-                    cwd=str(padd_dir),
-                    finish=True
-                )
+            # Determine result and provide feedback
+            if returncode == 0:
+                if "Already up to date" in output_text or "Already up-to-date" in output_text:
+                    logger.info("PADD is already up to date")
+                    print("\n    PADD is already up to date")
+                else:
+                    logger.info("PADD updated successfully")
+                    print("\n    PADD updated successfully")
             else:
-                logger.info("PADD is already up to date")
-                print("\n    PADD is already up to date")
-                time.sleep(FEEDBACK_DELAY)
-                self.display.switch_to_padd()
+                logger.error(f"PADD update failed with return code {returncode}")
+                print("\n    PADD update failed")
+                if stderr:
+                    for line in stderr.splitlines():
+                        logger.error(f"PADD update error: {line}")
+                        print(f"    {line}")
 
+        except subprocess.TimeoutExpired:
+            logger.error("PADD update timed out")
+            print("\n    Error: Update timed out")
         except Exception as e:
             logger.error(f"Failed to update PADD: {str(e)}")
             print(f"\n    Error: Failed to update PADD: {str(e)}")
+        finally:
             time.sleep(FEEDBACK_DELAY)
             self.display.switch_to_padd()
 
