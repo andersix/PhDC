@@ -41,8 +41,7 @@ class Config:
         """Setup logging configuration"""
         try:
             log_config = self._config['logging']
-            root_dir = Path(__file__).parent.parent.parent
-            log_dir = root_dir / 'log'
+            log_dir = Path(self._config['paths']['log_dir'])
             log_dir.mkdir(exist_ok=True)
 
             logging.basicConfig(

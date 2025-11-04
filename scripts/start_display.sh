@@ -4,17 +4,35 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
+# Determine log directory from config or use default
+CONFIG_FILE="$PROJECT_DIR/config/config.yaml"
+if [ -f "$CONFIG_FILE" ] && command -v yq &> /dev/null; then
+    LOG_DIR=$(yq -r '.paths.log_dir' "$CONFIG_FILE" 2>/dev/null)
+    if [ -z "$LOG_DIR" ] || [ "$LOG_DIR" == "null" ]; then
+        LOG_DIR="$PROJECT_DIR/log"
+    fi
+else
+    LOG_DIR="$PROJECT_DIR/log"
+fi
+
 # Log startup
-LOG_FILE="$PROJECT_DIR/log/startup.log"
-mkdir -p "$(dirname "$LOG_FILE")"
+LOG_FILE="$LOG_DIR/startup.log"
+mkdir -p "$LOG_DIR"
 
 log_msg() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
-# Rotate old log
+# Rotate old logs (keep 5 backups)
 if [ -f "$LOG_FILE" ]; then
-    mv "$LOG_FILE" "$LOG_FILE.old" 2>/dev/null
+    # Shift existing backups
+    for i in 4 3 2 1; do
+        if [ -f "$LOG_FILE.$i" ]; then
+            mv "$LOG_FILE.$i" "$LOG_FILE.$((i+1))" 2>/dev/null
+        fi
+    done
+    # Move current log to .1
+    mv "$LOG_FILE" "$LOG_FILE.1" 2>/dev/null
 fi
 
 log_msg "Starting display controller setup"
