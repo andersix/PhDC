@@ -7,6 +7,7 @@ from typing             import Optional
 from pathlib            import Path
 from ..utils.exceptions import DisplayError
 from ..utils.config     import Config
+from ..utils.constants  import CONFIRMATION_TIMEOUT
 from .tmux              import TMuxController
 from .backlight         import DisplayBacklight
 
@@ -84,7 +85,7 @@ class DisplayManager:
             print("    Button 4: Update PADD")
             print("    - press to update dashboard code")
             print("\n")
-            print("    Waiting 30s for selection")
+            print(f"    Waiting {CONFIRMATION_TIMEOUT}s for selection")
             print("    Any other button cancels")
 
             return True
@@ -122,7 +123,7 @@ class DisplayManager:
             print("    Button 4: Shutdown System")
             print("    - press to shutdown, then power off")
             print("\n")
-            print("    Waiting 30s for selection...")
+            print(f"    Waiting {CONFIRMATION_TIMEOUT}s for selection...")
             print("    Any other button cancels")
 
             return True

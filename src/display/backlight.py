@@ -39,6 +39,9 @@ class DisplayBacklight:
                 # Set up pin as output
                 self.pi.set_mode(self.pin, pigpio.OUTPUT)
 
+                # Set PWM frequency
+                self.pi.set_PWM_frequency(self.pin, self.pwmf)
+
                 # Start at full brightness
                 self.set_brightness(self.brightness_levels[0])
                 logger.info("PWM initialization successful")
