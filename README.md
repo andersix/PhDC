@@ -54,6 +54,8 @@ When the display shows PADD:
 
 **How to access**: Hold Button 1 for two seconds
 
+<img src="doc/img/PiTFT_phupdate.png" style=" width:480px; " >
+
 The display shows your options:
 
 ```
@@ -90,6 +92,8 @@ All updates display progress in real-time and show error messages if something f
 ## System Control Menu
 
 **How to access**: Hold Button 2 for two seconds
+
+<img src="doc/img/PiTFT_sysupdate.png" style=" width:480px; " >
 
 The display shows your options:
 
