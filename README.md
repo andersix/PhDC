@@ -440,7 +440,8 @@ The reboot will automatically start the updated application via the `.bashrc` st
   - PADD is now included as a git submodule
   - Configuration centralized in `config/config.yaml`
   - Modular architecture with separate controllers for display, buttons, PiHole, and system operations
-  - Menu system with confirmation timeout for safer operation
+  - Menu system for managing both pi-hole and system updates
+  - LED backlight using hardware PWM
 
 * **2022-5-09**
   - Now using the pigpio factory for PWM control to eliminate backlight flicker when dimmed
