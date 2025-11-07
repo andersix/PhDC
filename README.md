@@ -8,7 +8,7 @@ The application works in conjunction with the Pi-hole Admin Display Dashboard (P
 
 The application starts automatically on boot using a startup script called from `.bashrc`.
 
-<img src="doc/img/PiHole_TFT_buttons.png" style=" width:480px; " >
+<img src="doc/img/PiHole_TFT_buttons.jpg" style=" width:480px; " >
 
 ## How to Use the Buttons
 
@@ -54,7 +54,7 @@ When the display shows PADD:
 
 **How to access**: Hold Button 1 for two seconds
 
-<img src="doc/img/PiTFT_phupdate.png" style=" width:480px; " >
+<img src="doc/img/PiTFT_phupdate.jpg" style=" width:480px; " >
 
 The display shows your options:
 
@@ -93,7 +93,7 @@ All updates display progress in real-time and show error messages if something f
 
 **How to access**: Hold Button 2 for two seconds
 
-<img src="doc/img/PiTFT_sysupdate.png" style=" width:480px; " >
+<img src="doc/img/PiTFT_sysupdate.jpg" style=" width:480px; " >
 
 The display shows your options:
 
