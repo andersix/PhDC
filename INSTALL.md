@@ -104,6 +104,7 @@ The PiTFT display requires special drivers from Adafruit.
 
 1. **Install prerequisite packages**:
    ```bash
+   sudo apt install python3-pip
    sudo pip3 install --upgrade adafruit-python-shell click==7.0
    ```
 
